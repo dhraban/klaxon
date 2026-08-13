@@ -60,3 +60,17 @@ forecast center; it does not claim landfall or arrival.
 
 The one-shot `--test-pushover` mode is reserved for manual testing. It sends
 one clearly labeled priority-0 sample and does not change monitor state.
+
+Morning brief
+-------------
+The `Klaxon morning brief` workflow runs at 7:30 AM Bohol time (23:30 UTC),
+after the daily PAGASA detector at 6:55 AM and the 7:22 AM Facebook sweep. The
+source workflows cache their structured results; the brief itself does not
+re-scrape Facebook or PAGASA's cyclone bulletin.
+
+It sends one plain-text Pushover priority-0 message titled `Morning brief`.
+The message begins with the Bohol weekday/date, then contains Power today,
+Cyclone status, and Weather sections. Weather is read from PAGASA's official
+Selected Tourist Areas Bohol forecast, with Celsius retained and Fahrenheit
+calculated. Missing weather data is reported as unavailable rather than
+invented.

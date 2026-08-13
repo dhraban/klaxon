@@ -40,6 +40,13 @@ jobs:
           --send-pushover
           --pretty
 
+      - name: Preserve daily cyclone result for morning brief
+        if: ${{ always() && hashFiles('pagasa_daily_detector.json') != '' }}
+        uses: actions/cache/save@v4
+        with:
+          path: pagasa_daily_detector.json
+          key: pagasa-daily-result-${{ github.run_id }}-${{ github.run_attempt }}
+
       - name: Preserve PAGASA monitor state
         if: ${{ always() && hashFiles('pagasa_state.json') != '' }}
         uses: actions/cache/save@v4

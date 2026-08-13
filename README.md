@@ -126,3 +126,15 @@ For a one-time end-to-end sample notification, run
 `python3 pagasa_cyclone_check.py --test-pushover`. It sends one priority-0
 message labeled "TEST ONLY" with representative active-in-PAR content and
 does not fetch PAGASA or modify monitor state.
+
+Morning brief
+-------------
+The `Klaxon morning brief` workflow sends a plain-text Pushover priority-0
+message at 7:30 AM Bohol time. It runs after the 6:55 AM PAGASA detector and
+the 7:22 AM Facebook sweep, using their cached structured results. The brief
+contains Power today, Cyclone status, and Weather sections in that order.
+
+Weather comes from PAGASA's official Selected Tourist Areas page for Bohol.
+The first forecast day's official Celsius range is retained and converted to
+Fahrenheit in the compact form `conditions; 73–82°F (23–28°C).` If PAGASA's
+weather page is unavailable or incomplete, the brief says so without guessing.

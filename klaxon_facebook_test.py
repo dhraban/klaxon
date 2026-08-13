@@ -876,19 +876,28 @@ def main() -> int:
         result["new_post_count"] = len(posts)
         result["stopped_at_processed_post"] = len(posts) < len(scanned_posts)
         result["posts"] = posts
+        # Keep the complete recent scan, including already-processed posts, so
+        # the morning brief can use the latest scheduled-outage result even
+        # when this sweep has no new IDs to deliver.
+        result["latest_posts"] = scanned_posts
+        result["latest_post_count"] = len(scanned_posts)
         result["extracted_post_count"] = len(posts)
-        for post_for_classification in posts:
+        for post_for_classification in scanned_posts:
             assert isinstance(post_for_classification, dict)
             classification = classify_post(post_for_classification, config)
             post_for_classification["classification"] = classification
+        for post_for_delivery in posts:
+            assert isinstance(post_for_delivery, dict)
+            classification = post_for_delivery["classification"]
+            assert isinstance(classification, dict)
             if args.send_pushover:
-                post_for_classification["pushover_delivery"] = deliver_post_if_new(
-                    post_for_classification,
+                post_for_delivery["pushover_delivery"] = deliver_post_if_new(
+                    post_for_delivery,
                     classification,
                     args.state_file,
                 )
             else:
-                post_for_classification["pushover_delivery"] = {
+                post_for_delivery["pushover_delivery"] = {
                     "sent": False,
                     "reason": "Pushover sending was not requested for this run.",
                 }

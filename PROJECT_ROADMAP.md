@@ -48,7 +48,8 @@ brief.
 - Read and classify email contents
 - Add Messages/iMessage or other approved input sources
 - Send a daily 7:30 AM Philippine-time Pushover summary of upcoming scheduled
-  power outages
+  power outages — morning brief implemented with PAGASA Bohol weather and
+  cyclone-status sections
 
 ## Phase 4
 

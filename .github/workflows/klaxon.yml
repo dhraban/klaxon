@@ -63,6 +63,13 @@ jobs:
           --send-pushover
           --output latest_post.json
 
+      - name: Preserve latest power result for morning brief
+        if: ${{ always() && hashFiles('latest_post.json') != '' }}
+        uses: actions/cache/save@v4
+        with:
+          path: latest_post.json
+          key: klaxon-power-result-${{ github.run_id }}-${{ github.run_attempt }}
+
       - name: Preserve duplicate history
         if: ${{ always() && hashFiles('klaxon_state.sqlite3') != '' }}
         uses: actions/cache/save@v4

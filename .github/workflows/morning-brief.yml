@@ -1,0 +1,48 @@
+name: Klaxon morning brief
+
+on:
+  schedule:
+    # 7:30 AM Bohol time (UTC+8) = 11:30 PM UTC. The 6:55 PAGASA detector
+    # and the 7:22 Facebook sweep are scheduled ahead of this push.
+    - cron: "30 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  send-morning-brief:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
+      PUSHOVER_APPLICATION_TOKEN: ${{ secrets.PUSHOVER_APPLICATION_TOKEN }}
+
+    steps:
+      - name: Download Klaxon
+        uses: actions/checkout@v4
+
+      - name: Restore latest power result
+        uses: actions/cache/restore@v4
+        with:
+          path: latest_post.json
+          key: morning-power-result-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            klaxon-power-result-
+
+      - name: Restore daily cyclone result
+        uses: actions/cache/restore@v4
+        with:
+          path: pagasa_daily_detector.json
+          key: morning-cyclone-result-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            pagasa-daily-result-
+
+      - name: Send morning brief
+        run: >-
+          python3 morning_brief.py
+          --power-file latest_post.json
+          --cyclone-file pagasa_daily_detector.json
+          --output morning_brief.json
+          --send-pushover
+          --pretty
