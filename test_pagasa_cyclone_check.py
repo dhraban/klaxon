@@ -13,6 +13,7 @@ from pagasa_cyclone_check import (
     notification_priority,
     next_due_at,
     parse_html,
+    send_test_pushover,
     send_pushover_for_result,
     state_from_result,
 )
@@ -163,6 +164,20 @@ class PagasaCheckerTests(unittest.TestCase):
         )
         self.assertEqual(delivery["priority"], 1)
         self.assertEqual(calls[0]["priority"], 1)
+
+    def test_sample_pushover_is_labeled_and_priority_zero(self) -> None:
+        calls = []
+
+        def fake_send(**kwargs):
+            calls.append(kwargs)
+            return {"sent": True, "request_id": "test"}
+
+        delivery = send_test_pushover(fake_send)
+        self.assertTrue(delivery["test_sample"])
+        self.assertEqual(delivery["priority"], 0)
+        self.assertEqual(calls[0]["priority"], 0)
+        self.assertTrue(calls[0]["title"].startswith("TEST ONLY"))
+        self.assertIn("not a real current threat", calls[0]["message"])
 
     def test_noop_monitor_does_not_send_pushover(self) -> None:
         from pagasa_cyclone_check import main

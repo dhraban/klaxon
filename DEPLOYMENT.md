@@ -52,3 +52,6 @@ suppressed outside active monitoring. Each actual detector or monitor fetch
 sends through the existing Pushover secrets. Daily and three-hour checks use
 priority 0; only an hourly check due to an official Bohol wind signal uses
 priority 1.
+
+The one-shot `--test-pushover` mode is reserved for manual testing. It sends
+one clearly labeled priority-0 sample and does not change monitor state.

@@ -29,6 +29,34 @@ CAP_FEED_URL = "https://publicalert.pagasa.dost.gov.ph/feeds/"
 BOHOL_TIMEZONE = "Asia/Manila"
 USER_AGENT = "Klaxon/1.0 (+https://github.com/dhraban/klaxon)"
 
+TEST_SAMPLE_RESULT: dict[str, object] = {
+    "source": SOURCE_URL,
+    "checked_at_utc": "2026-08-13T00:00:00Z",
+    "active_cyclone": True,
+    "storm_name": "TESTING",
+    "par_status": "inside",
+    "issued_at": "6:00 AM, 13 August 2026",
+    "forecast_positions": [
+        {
+            "forecast_window": "12-Hour Forecast",
+            "valid_at": "6:00 PM 13 August 2026",
+            "latitude": 12.5,
+            "longitude": 124.5,
+            "details": "East of Bohol",
+        },
+        {
+            "forecast_window": "24-Hour Forecast",
+            "valid_at": "6:00 AM 14 August 2026",
+            "latitude": 13.0,
+            "longitude": 124.0,
+            "details": "Northeast of Bohol",
+        },
+    ],
+    "bohol_under_wind_signal": False,
+    "bohol_wind_signal": None,
+    "summary": "TEST ONLY: sample active cyclone inside PAR; this is not a real threat.",
+}
+
 
 class PagasaError(RuntimeError):
     """Raised when PAGASA data cannot be read or interpreted."""
@@ -371,6 +399,18 @@ def send_pushover_for_result(
     return {**delivery, "priority": priority}
 
 
+def send_test_pushover(send_function=send_notification) -> dict[str, object]:
+    """Send exactly one clearly labeled, normal-priority sample alert."""
+    title, message = build_pushover_message(TEST_SAMPLE_RESULT)
+    title = f"TEST ONLY — {title}"
+    message = (
+        "TEST ONLY — SAMPLE ALERT. This is not a real current threat and requires no action.\n\n"
+        + message
+    )
+    delivery = send_function(title=title, message=message, priority=0)
+    return {**delivery, "priority": 0, "test_sample": True}
+
+
 def read_state(state_path: Path) -> dict[str, object]:
     if not state_path.exists():
         return {}
@@ -437,6 +477,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Send one Pushover update after each actual PAGASA fetch.",
     )
+    parser.add_argument(
+        "--test-pushover",
+        action="store_true",
+        help="Send exactly one clearly labeled sample PAGASA alert at priority 0.",
+    )
     parser.add_argument("--pretty", action="store_true")
     return parser.parse_args()
 
@@ -444,6 +489,10 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     try:
+        if args.test_pushover:
+            delivery = send_test_pushover()
+            print(json.dumps(delivery, indent=2))
+            return 0
         now = datetime.now(timezone.utc)
         state = read_state(args.state_file)
         if args.mode == "monitor" and not args.force:

@@ -116,3 +116,8 @@ is fixed hourly, but it does not fetch PAGASA while elevated monitoring is off
 or while its next check is not due. Each actual check sends a Pushover update:
 priority 0 for the daily and three-hour checks, and priority 1 only for an
 hourly check caused by an official Bohol wind signal.
+
+For a one-time end-to-end sample notification, run
+`python3 pagasa_cyclone_check.py --test-pushover`. It sends one priority-0
+message labeled "TEST ONLY" with representative active-in-PAR content and
+does not fetch PAGASA or modify monitor state.
