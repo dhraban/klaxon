@@ -117,6 +117,11 @@ or while its next check is not due. Each actual check sends a Pushover update:
 priority 0 for the daily and three-hour checks, and priority 1 only for an
 hourly check caused by an official Bohol wind signal.
 
+When PAGASA provides timestamped forecast positions, the alert also reports
+the earliest forecast center within 250 km of the Dauis, Bohol reference point
+as an approximate relative time and distance. If none qualifies, it says so;
+it does not infer landfall or arrival.
+
 For a one-time end-to-end sample notification, run
 `python3 pagasa_cyclone_check.py --test-pushover`. It sends one priority-0
 message labeled "TEST ONLY" with representative active-in-PAR content and

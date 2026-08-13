@@ -9,7 +9,12 @@ from unittest.mock import patch
 from datetime import datetime, timezone
 
 from pagasa_cyclone_check import (
+    BOHOL_PROXIMITY_THRESHOLD_KM,
+    BOHOL_REFERENCE_LATITUDE,
+    BOHOL_REFERENCE_LONGITUDE,
+    build_pushover_message,
     build_result,
+    calculate_forecast_proximity,
     notification_priority,
     next_due_at,
     parse_html,
@@ -178,6 +183,101 @@ class PagasaCheckerTests(unittest.TestCase):
         self.assertEqual(calls[0]["priority"], 0)
         self.assertTrue(calls[0]["title"].startswith("TEST ONLY"))
         self.assertIn("not a real current threat", calls[0]["message"])
+
+    def test_forecast_proximity_finds_earliest_point_within_threshold(self) -> None:
+        proximity = calculate_forecast_proximity(
+            [
+                {
+                    "valid_at": "12:00 PM 13 August 2026",
+                    "latitude": 10.5,
+                    "longitude": 124.5,
+                },
+                {
+                    "valid_at": "6:00 AM 14 August 2026",
+                    "latitude": 10.0,
+                    "longitude": 124.0,
+                },
+                {
+                    "valid_at": "6:00 PM 14 August 2026",
+                    "latitude": 9.7,
+                    "longitude": 124.0,
+                },
+            ],
+            "2026-08-13T00:00:00Z",
+        )
+        self.assertTrue(proximity["within_threshold"])
+        self.assertEqual(proximity["forecast_valid_at"], "2026-08-13T12:00:00+08:00")
+        self.assertEqual(proximity["relative_time"], "in about 4 hours")
+        self.assertLessEqual(proximity["distance_km"], BOHOL_PROXIMITY_THRESHOLD_KM)
+
+    def test_forecast_proximity_handles_no_match_and_bad_coordinates(self) -> None:
+        proximity = calculate_forecast_proximity(
+            [
+                {"valid_at": "12:00 PM 13 August 2026", "latitude": 95, "longitude": 124},
+                {"valid_at": "not a timestamp", "latitude": 10, "longitude": 124},
+                {"valid_at": "12:00 PM 13 August 2026", "latitude": 20, "longitude": 150},
+            ],
+            "2026-08-13T00:00:00Z",
+        )
+        self.assertFalse(proximity["within_threshold"])
+        self.assertEqual(proximity["threshold_km"], BOHOL_PROXIMITY_THRESHOLD_KM)
+
+    def test_forecast_proximity_exact_reference_point_is_inside(self) -> None:
+        proximity = calculate_forecast_proximity(
+            [
+                {
+                    "valid_at": "12:00 PM 13 August 2026",
+                    "latitude": BOHOL_REFERENCE_LATITUDE,
+                    "longitude": BOHOL_REFERENCE_LONGITUDE,
+                }
+            ],
+            "2026-08-13T00:00:00Z",
+            threshold_km=0,
+        )
+        self.assertTrue(proximity["within_threshold"])
+        self.assertEqual(proximity["distance_km"], 0)
+
+    def test_notification_wording_uses_forecast_center_and_relative_time(self) -> None:
+        result = {
+            "storm_name": "TESTING",
+            "summary": "TEST ONLY: sample active cyclone inside PAR.",
+            "par_status": "inside",
+            "issued_at": "6:00 AM, 13 August 2026",
+            "bohol_wind_signal": None,
+            "forecast_positions": [],
+            "forecast_proximity_to_bohol": {
+                "reference": "Dauis, Bohol",
+                "threshold_km": 250.0,
+                "within_threshold": True,
+                "relative_time": "in about 36 hours",
+                "distance_km": 184,
+            },
+        }
+        _, message = build_pushover_message(result)
+        self.assertIn("Earliest forecast center within 250 km", message)
+        self.assertIn("in about 36 hours", message)
+        self.assertIn("about 184 km away", message)
+        self.assertNotIn("landfall", message.lower())
+
+    def test_notification_wording_states_no_close_forecast(self) -> None:
+        result = {
+            "storm_name": "TESTING",
+            "summary": "Sample active cyclone inside PAR.",
+            "par_status": "inside",
+            "issued_at": "6:00 AM, 13 August 2026",
+            "bohol_wind_signal": None,
+            "forecast_positions": [],
+            "forecast_proximity_to_bohol": {
+                "reference": "Dauis, Bohol",
+                "threshold_km": 250.0,
+                "within_threshold": False,
+            },
+        }
+        _, message = build_pushover_message(result)
+        self.assertIn(
+            "PAGASA's published forecast positions do not currently bring the center within 250 km of Bohol.",
+            message,
+        )
 
     def test_noop_monitor_does_not_send_pushover(self) -> None:
         from pagasa_cyclone_check import main

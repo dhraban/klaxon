@@ -53,5 +53,10 @@ sends through the existing Pushover secrets. Daily and three-hour checks use
 priority 0; only an hourly check due to an official Bohol wind signal uses
 priority 1.
 
+Alerts also calculate the earliest future PAGASA forecast position within 250
+km of the Dauis, Bohol reference point, using the bulletin's timestamp and
+coordinates only. The wording is an approximate time and distance to the
+forecast center; it does not claim landfall or arrival.
+
 The one-shot `--test-pushover` mode is reserved for manual testing. It sends
 one clearly labeled priority-0 sample and does not change monitor state.

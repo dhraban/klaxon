@@ -14,12 +14,14 @@ import argparse
 from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
 import json
+import math
 from pathlib import Path
 import re
 import sys
 from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 import xml.etree.ElementTree as ET
+from zoneinfo import ZoneInfo
 
 from pushover_client import PushoverError, send_notification
 
@@ -27,6 +29,12 @@ from pushover_client import PushoverError, send_notification
 SOURCE_URL = "https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin"
 CAP_FEED_URL = "https://publicalert.pagasa.dost.gov.ph/feeds/"
 BOHOL_TIMEZONE = "Asia/Manila"
+# Dauis is the user's configured home location. It is used as a consistent
+# Bohol reference point; the threshold is deliberately a province-scale radius.
+BOHOL_REFERENCE_NAME = "Dauis, Bohol"
+BOHOL_REFERENCE_LATITUDE = 9.625
+BOHOL_REFERENCE_LONGITUDE = 123.87
+BOHOL_PROXIMITY_THRESHOLD_KM = 250.0
 USER_AGENT = "Klaxon/1.0 (+https://github.com/dhraban/klaxon)"
 
 TEST_SAMPLE_RESULT: dict[str, object] = {
@@ -172,6 +180,109 @@ def extract_forecast_positions(text: str) -> list[dict[str, object]]:
     return positions
 
 
+def haversine_distance_km(
+    latitude_a: float,
+    longitude_a: float,
+    latitude_b: float,
+    longitude_b: float,
+) -> float:
+    """Return great-circle distance between two coordinate pairs in km."""
+    earth_radius_km = 6371.0088
+    latitude_a_radians = math.radians(latitude_a)
+    latitude_b_radians = math.radians(latitude_b)
+    delta_latitude = math.radians(latitude_b - latitude_a)
+    delta_longitude = math.radians(longitude_b - longitude_a)
+    a = (
+        math.sin(delta_latitude / 2) ** 2
+        + math.cos(latitude_a_radians)
+        * math.cos(latitude_b_radians)
+        * math.sin(delta_longitude / 2) ** 2
+    )
+    return earth_radius_km * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def parse_pagasa_timestamp(value: object) -> datetime | None:
+    if not isinstance(value, str):
+        return None
+    cleaned = normalized_text(value).replace(",", "")
+    for format_string in ("%I:%M %p %d %B %Y", "%I:%M %p %d %b %Y"):
+        try:
+            return datetime.strptime(cleaned, format_string).replace(
+                tzinfo=ZoneInfo(BOHOL_TIMEZONE)
+            )
+        except ValueError:
+            continue
+    return None
+
+
+def format_relative_time(hours_until: float) -> str:
+    if hours_until < 1:
+        return "in less than 1 hour"
+    return f"in about {round(hours_until)} hours"
+
+
+def format_distance_km(value: object) -> str:
+    if isinstance(value, (int, float)) and float(value).is_integer():
+        return str(int(value))
+    return str(value)
+
+
+def calculate_forecast_proximity(
+    forecast_positions: object,
+    checked_at_utc: object,
+    *,
+    threshold_km: float = BOHOL_PROXIMITY_THRESHOLD_KM,
+) -> dict[str, object]:
+    """Find the earliest timestamped forecast point within the Bohol radius."""
+    result: dict[str, object] = {
+        "reference": BOHOL_REFERENCE_NAME,
+        "threshold_km": threshold_km,
+        "within_threshold": False,
+    }
+    if not isinstance(forecast_positions, list) or not isinstance(checked_at_utc, str):
+        return result
+    try:
+        checked_at = datetime.fromisoformat(checked_at_utc.replace("Z", "+00:00"))
+    except ValueError:
+        return result
+
+    candidates: list[dict[str, object]] = []
+    for position in forecast_positions:
+        if not isinstance(position, dict):
+            continue
+        latitude = position.get("latitude")
+        longitude = position.get("longitude")
+        valid_at = parse_pagasa_timestamp(position.get("valid_at"))
+        if not isinstance(latitude, (int, float)) or not isinstance(longitude, (int, float)):
+            continue
+        if not (-90 <= latitude <= 90 and -180 <= longitude <= 180) or valid_at is None:
+            continue
+        hours_until = (valid_at.astimezone(timezone.utc) - checked_at).total_seconds() / 3600
+        if hours_until < 0:
+            continue
+        distance_km = haversine_distance_km(
+            BOHOL_REFERENCE_LATITUDE,
+            BOHOL_REFERENCE_LONGITUDE,
+            float(latitude),
+            float(longitude),
+        )
+        if distance_km <= threshold_km:
+            candidates.append(
+                {
+                    "forecast_valid_at": valid_at.isoformat(),
+                    "hours_until": round(hours_until, 1),
+                    "relative_time": format_relative_time(hours_until),
+                    "distance_km": round(distance_km),
+                    "latitude": latitude,
+                    "longitude": longitude,
+                }
+            )
+    if not candidates:
+        return result
+    earliest = min(candidates, key=lambda candidate: float(candidate["hours_until"]))
+    return {**result, "within_threshold": True, **earliest}
+
+
 def extract_bohol_signal(text: str) -> tuple[bool, int | None, str | None]:
     signal_section_match = re.search(
         r"(?:TROPICAL CYCLONE WIND SIGNALS?|TCWS)[\s:]*(.*?)(?="
@@ -283,6 +394,8 @@ def build_result(
     storm_name = extract_storm_name(combined_text)
     par_status = extract_par_status(combined_text, bool(storm_name))
     bohol_affected, signal_number, _ = extract_bohol_signal(combined_text)
+    forecast_positions = extract_forecast_positions(combined_text)
+    forecast_proximity = calculate_forecast_proximity(forecast_positions, checked)
     in_par = par_status == "inside"
     if bohol_affected:
         cadence = "hourly"
@@ -297,7 +410,8 @@ def build_result(
         "storm_name": storm_name,
         "par_status": par_status,
         "issued_at": extract_issue_time(combined_text),
-        "forecast_positions": extract_forecast_positions(combined_text),
+        "forecast_positions": forecast_positions,
+        "forecast_proximity_to_bohol": forecast_proximity,
         "bohol_under_wind_signal": bohol_affected,
         "bohol_wind_signal": signal_number,
         "cadence": cadence,
@@ -374,12 +488,30 @@ def build_pushover_message(result: dict[str, object]) -> tuple[str, str]:
                     f"{position.get('latitude')}N, {position.get('longitude')}E"
                 )
     forecast_text = "\n".join(forecast_lines) or "No forecast positions extracted."
+    proximity = result.get("forecast_proximity_to_bohol")
+    proximity_line = ""
+    if isinstance(proximity, dict):
+        if proximity.get("within_threshold"):
+            proximity_line = (
+                f"Earliest forecast center within "
+                f"{format_distance_km(proximity.get('threshold_km'))} km of "
+                f"{proximity.get('reference', BOHOL_REFERENCE_NAME)}: "
+                f"{proximity.get('relative_time')}; about "
+                f"{format_distance_km(proximity.get('distance_km'))} km away.\n"
+            )
+        else:
+            proximity_line = (
+                "PAGASA's published forecast positions do not currently bring the "
+                f"center within {format_distance_km(proximity.get('threshold_km', BOHOL_PROXIMITY_THRESHOLD_KM))} "
+                "km of Bohol.\n"
+            )
     message = (
         f"{result.get('summary', 'PAGASA status updated.')}\n"
         f"PAR status: {result.get('par_status', 'unknown')}\n"
         f"Issued: {result.get('issued_at') or 'not provided'}\n"
         f"Bohol official wind signal: "
         f"{result.get('bohol_wind_signal') or 'none'}\n\n"
+        f"{proximity_line}"
         f"Forecast positions:\n{forecast_text}\n\n"
         f"Source: {SOURCE_URL}"
     )
