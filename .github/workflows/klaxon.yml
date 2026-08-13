@@ -7,6 +7,15 @@ on:
     # 7:15 AM Philippine time (UTC+8) for the previous day's run-count audit.
     - cron: "15 23 * * *"
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Choose what to run manually"
+        required: true
+        type: choice
+        options:
+          - facebook
+          - health-audit
+        default: facebook
 
 permissions:
   contents: read
@@ -17,7 +26,9 @@ concurrency:
 
 jobs:
   check-facebook:
-    if: ${{ github.event_name != 'schedule' || github.event.schedule != '15 23 * * *' }}
+    if: >-
+      ${{ (github.event_name != 'schedule' || github.event.schedule != '15 23 * * *')
+      && (github.event_name != 'workflow_dispatch' || inputs.mode != 'health-audit') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
@@ -60,7 +71,9 @@ jobs:
           key: klaxon-state-${{ github.run_id }}-${{ github.run_attempt }}
 
   audit-watcher-health:
-    if: ${{ github.event_name == 'schedule' && github.event.schedule == '15 23 * * *' }}
+    if: >-
+      ${{ (github.event_name == 'schedule' && github.event.schedule == '15 23 * * *')
+      || (github.event_name == 'workflow_dispatch' && inputs.mode == 'health-audit') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
