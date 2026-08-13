@@ -99,6 +99,9 @@ POST_URL_PATTERN = re.compile(
 ACCESSIBILITY_PATTERN = re.compile(
     r'"accessibility_caption":"(?P<value>(?:\\.|[^"\\])*)"'
 )
+MONTH_NAMES = (
+    "January|February|March|April|May|June|July|August|September|October|November|December"
+)
 
 
 class KlaxonTestError(RuntimeError):
@@ -119,6 +122,93 @@ def unique(values: list[str]) -> list[str]:
             seen.add(value)
             result.append(value)
     return result
+
+
+def published_philippines_date(post: dict[str, object]) -> dt.date | None:
+    value = post.get("published_philippines")
+    if not isinstance(value, str):
+        return None
+    try:
+        return dt.datetime.fromisoformat(value).date()
+    except ValueError:
+        return None
+
+
+def extract_scheduled_outage_details(
+    searchable_text: str, post: dict[str, object]
+) -> dict[str, object]:
+    """Extract the announced outage date/window without guessing a date."""
+    announced_date = published_philippines_date(post)
+    date_start: dt.date | None = None
+    date_end: dt.date | None = None
+
+    relative_match = re.search(r"\b(today|tomorrow)\b", searchable_text, re.IGNORECASE)
+    if relative_match and announced_date:
+        date_start = announced_date + dt.timedelta(
+            days=1 if relative_match.group(1).casefold() == "tomorrow" else 0
+        )
+        date_end = date_start
+
+    month_match = re.search(
+        rf"(?P<month>{MONTH_NAMES})\s+(?P<day>\d{{1,2}})(?:st|nd|rd|th)?"
+        rf"(?:,?\s*(?P<year>\d{{4}}))?",
+        searchable_text,
+        re.IGNORECASE,
+    )
+    if not month_match:
+        month_match = re.search(
+            rf"(?P<day>\d{{1,2}})\s+(?P<month>{MONTH_NAMES})"
+            rf"(?:,?\s*(?P<year>\d{{4}}))?",
+            searchable_text,
+            re.IGNORECASE,
+        )
+    if month_match:
+        month_number = dt.datetime.strptime(
+            month_match.group("month")[:3], "%b"
+        ).month
+        year = int(month_match.group("year") or (announced_date.year if announced_date else 0))
+        if year:
+            try:
+                date_start = dt.date(year, month_number, int(month_match.group("day")))
+                date_end = date_start
+                range_match = re.match(
+                    r"\s*[-–]\s*(\d{1,2})", searchable_text[month_match.end() :]
+                )
+                if range_match:
+                    date_end = dt.date(year, month_number, int(range_match.group(1)))
+            except ValueError:
+                date_start = date_end = None
+
+    time_match = re.search(
+        r"\bfrom\s+(?P<start>\d{1,2}(?::\d{2})?\s*(?:AM|PM))\s+"
+        r"to\s+(?P<end>\d{1,2}(?::\d{2})?\s*(?:AM|PM))",
+        searchable_text,
+        re.IGNORECASE,
+    )
+    start_time = time_match.group("start") if time_match else None
+    end_time = time_match.group("end") if time_match else None
+    if date_start and start_time and end_time:
+        try:
+            parsed_start = dt.datetime.strptime(start_time.upper().replace(" ", ""), "%I:%M%p")
+            parsed_end = dt.datetime.strptime(end_time.upper().replace(" ", ""), "%I:%M%p")
+        except ValueError:
+            parsed_start = parsed_end = None
+        if parsed_start and parsed_end and parsed_end < parsed_start:
+            date_end = date_start + dt.timedelta(days=1)
+
+    return {
+        "date_status": "known" if date_start else "uncertain",
+        "date_start": date_start.isoformat() if date_start else None,
+        "date_end": date_end.isoformat() if date_end else None,
+        "start_time": start_time,
+        "end_time": end_time,
+        "announced_date": announced_date.isoformat() if announced_date else None,
+        "when_text": (
+            f"{date_start.isoformat()} from {start_time} to {end_time}"
+            if date_start and start_time and end_time
+            else "Date/time uncertain"
+        ),
+    }
 
 
 def normalize_for_matching(value: str) -> str:
@@ -260,6 +350,12 @@ def classify_post(
     else:
         reason = "Outage wording was found, but no configured location was found."
 
+    scheduled_details = (
+        extract_scheduled_outage_details(searchable_text, post)
+        if outage_type == "scheduled" and qualifies
+        else None
+    )
+
     return {
         "qualifies_for_alert": qualifies,
         "is_power_interruption": is_outage,
@@ -270,6 +366,7 @@ def classify_post(
         "matched_emergency_terms": matched_emergency_terms,
         "outage_type": outage_type,
         "pushover_priority": priority if qualifies else None,
+        "scheduled_outage": scheduled_details,
         "reason": reason,
     }
 
@@ -358,6 +455,26 @@ def initialize_state_database(state_path: Path) -> None:
                 period_started_at_utc TEXT NOT NULL,
                 run_count INTEGER NOT NULL DEFAULT 0,
                 last_run_at_utc TEXT
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS scheduled_outages (
+                schedule_key TEXT PRIMARY KEY,
+                source_post_id TEXT NOT NULL,
+                announced_date TEXT,
+                outage_date_start TEXT,
+                outage_date_end TEXT,
+                start_time TEXT,
+                end_time TEXT,
+                location_text TEXT NOT NULL,
+                location_terms_json TEXT NOT NULL,
+                source_url TEXT,
+                source_text TEXT NOT NULL,
+                date_status TEXT NOT NULL,
+                first_seen_at_utc TEXT NOT NULL,
+                last_seen_at_utc TEXT NOT NULL
             )
             """
         )
@@ -461,6 +578,81 @@ def load_processed_post_ids(state_path: Path) -> set[str]:
     with sqlite3.connect(state_path) as connection:
         rows = connection.execute("SELECT post_id FROM processed_posts").fetchall()
     return {str(row[0]) for row in rows}
+
+
+def scheduled_outage_key(
+    details: dict[str, object], classification: dict[str, object]
+) -> str:
+    locations = classification.get("matched_location_terms", [])
+    location_key = ",".join(
+        sorted(str(value).casefold() for value in locations if isinstance(value, str))
+    ) if isinstance(locations, list) else ""
+    return "|".join(
+        [
+            str(details.get("date_start") or "unknown"),
+            str(details.get("date_end") or "unknown"),
+            str(details.get("start_time") or "unknown").casefold(),
+            str(details.get("end_time") or "unknown").casefold(),
+            location_key,
+        ]
+    )
+
+
+def record_scheduled_outage(
+    state_path: Path,
+    post: dict[str, object],
+    classification: dict[str, object],
+) -> None:
+    """Upsert a recognized scheduled outage for the durable morning view."""
+    details = classification.get("scheduled_outage")
+    if classification.get("outage_type") != "scheduled" or not isinstance(details, dict):
+        return
+    post_id = post.get("id")
+    if not isinstance(post_id, (str, int)):
+        return
+    locations = classification.get("matched_location_terms", [])
+    location_terms = [str(value) for value in locations if isinstance(value, str)] if isinstance(locations, list) else []
+    if not location_terms:
+        return
+    initialize_state_database(state_path)
+    now = dt.datetime.now(dt.timezone.utc).isoformat()
+    source_text = post.get("caption") if isinstance(post.get("caption"), str) else ""
+    source_url = post.get("url") if isinstance(post.get("url"), str) else None
+    location_text = ", ".join(location_terms)
+    schedule_key = scheduled_outage_key(details, classification)
+    with sqlite3.connect(state_path) as connection:
+        connection.execute(
+            """
+            INSERT INTO scheduled_outages (
+                schedule_key, source_post_id, announced_date, outage_date_start,
+                outage_date_end, start_time, end_time, location_text,
+                location_terms_json, source_url, source_text, date_status,
+                first_seen_at_utc, last_seen_at_utc
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(schedule_key) DO UPDATE SET
+                source_post_id = excluded.source_post_id,
+                announced_date = excluded.announced_date,
+                source_url = excluded.source_url,
+                source_text = excluded.source_text,
+                last_seen_at_utc = excluded.last_seen_at_utc
+            """,
+            (
+                schedule_key,
+                str(post_id),
+                details.get("announced_date"),
+                details.get("date_start"),
+                details.get("date_end"),
+                details.get("start_time"),
+                details.get("end_time"),
+                location_text,
+                json.dumps(location_terms),
+                source_url,
+                source_text,
+                details.get("date_status", "uncertain"),
+                now,
+                now,
+            ),
+        )
 
 
 def record_processed_post_id(
@@ -886,6 +1078,10 @@ def main() -> int:
             assert isinstance(post_for_classification, dict)
             classification = classify_post(post_for_classification, config)
             post_for_classification["classification"] = classification
+            if args.send_pushover:
+                record_scheduled_outage(
+                    args.state_file, post_for_classification, classification
+                )
         for post_for_delivery in posts:
             assert isinstance(post_for_delivery, dict)
             classification = post_for_delivery["classification"]

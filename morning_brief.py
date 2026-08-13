@@ -9,6 +9,7 @@ import html
 import json
 from pathlib import Path
 import re
+import sqlite3
 import sys
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
@@ -157,6 +158,44 @@ def power_posts(power_result: dict[str, object]) -> list[dict[str, object]]:
     return [post for post in candidates if isinstance(post, dict)]
 
 
+def load_retained_scheduled_outages(
+    state_path: Path, today: object
+) -> list[dict[str, object]]:
+    """Read only schedule records that overlap today or remain uncertain."""
+    if not state_path.exists() or not hasattr(today, "isoformat"):
+        return []
+    today_text = today.isoformat()
+    try:
+        with sqlite3.connect(state_path) as connection:
+            rows = connection.execute(
+                """
+                SELECT schedule_key, outage_date_start, outage_date_end,
+                       start_time, end_time, location_text, source_url,
+                       source_text, date_status, announced_date
+                FROM scheduled_outages
+                WHERE (
+                    date_status = 'known'
+                    AND outage_date_start <= ?
+                    AND outage_date_end >= ?
+                )
+                OR (
+                    date_status != 'known'
+                    AND (announced_date IS NULL OR announced_date >= date(?, '-7 day'))
+                )
+                ORDER BY outage_date_start IS NULL, outage_date_start,
+                         start_time IS NULL, start_time, schedule_key
+                """,
+                (today_text, today_text, today_text),
+            ).fetchall()
+    except sqlite3.Error as error:
+        raise MorningBriefError(f"Could not read retained scheduled outages: {error}") from error
+    fields = (
+        "schedule_key", "date_start", "date_end", "start_time", "end_time",
+        "location_text", "source_url", "source_text", "date_status", "announced_date",
+    )
+    return [dict(zip(fields, row)) for row in rows]
+
+
 def power_when(post: dict[str, object]) -> str:
     caption = post.get("caption")
     if not isinstance(caption, str):
@@ -172,7 +211,48 @@ def power_when(post: dict[str, object]) -> str:
     return str(published) if isinstance(published, str) and published else "Not specified"
 
 
-def build_power_section(power_result: dict[str, object]) -> str:
+def retained_outage_line(outage: dict[str, object]) -> str:
+    location = str(outage.get("location_text") or "Not specified")
+    if outage.get("date_status") != "known":
+        return f"Scheduled outage — {location} — date/time uncertain; see the utility notice."
+    date_start = str(outage.get("date_start") or "date unknown")
+    date_end = str(outage.get("date_end") or date_start)
+    date_text = date_start if date_start == date_end else f"{date_start} to {date_end}"
+    start_time = outage.get("start_time")
+    end_time = outage.get("end_time")
+    time_text = f" from {start_time} to {end_time}" if start_time and end_time else "; time uncertain"
+    return f"Scheduled outage — {location} — {date_text}{time_text}."
+
+
+def build_power_section(
+    power_result: dict[str, object],
+    *,
+    state_path: Path | None = None,
+    today: object | None = None,
+) -> str:
+    if state_path is not None and today is not None:
+        retained = load_retained_scheduled_outages(state_path, today)
+        if retained:
+            return "\n".join(retained_outage_line(outage) for outage in retained)
+        # A known empty retained view is authoritative: the fallback below is
+        # only for older/manual JSON fixtures that predate the durable table.
+        if state_path.exists():
+            try:
+                with sqlite3.connect(state_path) as connection:
+                    has_table = connection.execute(
+                        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='scheduled_outages'"
+                    ).fetchone()
+            except sqlite3.Error as error:
+                raise MorningBriefError(f"Could not inspect outage state: {error}") from error
+            if has_table:
+                return "No scheduled outage affecting your area."
+
+    retained_from_json = power_result.get("scheduled_outages")
+    if isinstance(retained_from_json, list):
+        records = [item for item in retained_from_json if isinstance(item, dict)]
+        if records:
+            return "\n".join(retained_outage_line(item) for item in records)
+
     scheduled: list[str] = []
     for post in power_posts(power_result):
         classification = post.get("classification")
@@ -221,11 +301,14 @@ def build_morning_brief(
     power_result: dict[str, object],
     cyclone_result: dict[str, object],
     weather_result: dict[str, object],
+    *,
+    state_path: Path | None = None,
 ) -> tuple[str, str]:
+    local_today = now.astimezone(ZoneInfo(BOHOL_TIMEZONE)).date()
     message = "\n\n".join(
         [
             format_date_line(now),
-            f"Power today\n{build_power_section(power_result)}",
+            f"Power today\n{build_power_section(power_result, state_path=state_path, today=local_today)}",
             f"Cyclone status\n{build_cyclone_section(cyclone_result)}",
             f"Weather\n{weather_result.get('summary') or 'Forecast unavailable from PAGASA.'}",
         ]
@@ -245,6 +328,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--power-file", type=Path, default=Path("latest_post.json"))
     parser.add_argument("--cyclone-file", type=Path, default=Path("pagasa_daily_detector.json"))
+    parser.add_argument("--state-file", type=Path, default=Path("klaxon_state.sqlite3"))
     parser.add_argument("--weather-html", type=Path, help="Use saved PAGASA HTML instead of fetching it.")
     parser.add_argument("--output", type=Path, default=Path("morning_brief.json"))
     parser.add_argument("--checked-at", help="UTC ISO timestamp for deterministic tests.")
@@ -269,7 +353,7 @@ def main() -> int:
             else fetch_weather()
         )
         title, message = build_morning_brief(
-            now, power_result, cyclone_result, weather_result
+            now, power_result, cyclone_result, weather_result, state_path=args.state_file
         )
         if args.send_pushover:
             delivery = send_morning_brief(message)

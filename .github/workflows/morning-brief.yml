@@ -22,6 +22,14 @@ jobs:
       - name: Download Klaxon
         uses: actions/checkout@v4
 
+      - name: Restore durable Facebook outage schedule
+        uses: actions/cache/restore@v4
+        with:
+          path: klaxon_state.sqlite3
+          key: morning-facebook-state-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            klaxon-state-
+
       - name: Restore latest power result
         uses: actions/cache/restore@v4
         with:
@@ -43,6 +51,7 @@ jobs:
           python3 morning_brief.py
           --power-file latest_post.json
           --cyclone-file pagasa_daily_detector.json
+          --state-file klaxon_state.sqlite3
           --output morning_brief.json
           --send-pushover
           --pretty

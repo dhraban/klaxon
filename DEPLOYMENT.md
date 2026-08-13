@@ -68,6 +68,13 @@ after the daily PAGASA detector at 6:55 AM and the 7:22 AM Facebook sweep. The
 source workflows cache their structured results; the brief itself does not
 re-scrape Facebook or PAGASA's cyclone bulletin.
 
+Each Facebook sweep also upserts recognized scheduled-outage notices into the
+durable `scheduled_outages` table in `klaxon_state.sqlite3`. The brief checks
+all retained notices against the current Philippine calendar date, filters to
+the configured Dauis/Mayacabac area, excludes non-overlapping dates, and
+deduplicates repeated notices with the same outage window. A notice whose date
+cannot be read is retained and reported as date/time uncertain.
+
 It sends one plain-text Pushover priority-0 message titled `Morning brief`.
 The message begins with the Bohol weekday/date, then contains Power today,
 Cyclone status, and Weather sections. Weather is read from PAGASA's official

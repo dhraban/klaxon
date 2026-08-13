@@ -134,6 +134,13 @@ message at 7:30 AM Bohol time. It runs after the 6:55 AM PAGASA detector and
 the 7:22 AM Facebook sweep, using their cached structured results. The brief
 contains Power today, Cyclone status, and Weather sections in that order.
 
+Recognized scheduled-outage notices are also stored in durable SQLite state.
+The brief evaluates all retained notices against today's Philippine calendar
+date, filters to Dauis/Mayacabac, excludes past and future-only notices, and
+deduplicates reposts or wording updates for the same date/time window. Missing
+dates are shown as uncertain rather than treated as proof that there is no
+outage.
+
 Weather comes from PAGASA's official Selected Tourist Areas page for Bohol.
 The first forecast day's official Celsius range is retained and converted to
 Fahrenheit in the compact form `conditions; 73–82°F (23–28°C).` If PAGASA's

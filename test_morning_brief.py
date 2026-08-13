@@ -1,8 +1,16 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from pathlib import Path
+import tempfile
 import unittest
 
+from klaxon_facebook_test import (
+    classify_post,
+    initialize_state_database,
+    load_filter_config,
+    record_scheduled_outage,
+)
 from morning_brief import (
     build_morning_brief,
     build_power_section,
@@ -10,6 +18,9 @@ from morning_brief import (
     parse_weather_html,
     send_morning_brief,
 )
+
+
+CONFIG = load_filter_config(Path(__file__).with_name("location_config.json"))
 
 
 WEATHER_FIXTURE = """
@@ -50,6 +61,33 @@ def power_result() -> dict[str, object]:
 
 
 class MorningBriefTests(unittest.TestCase):
+    def scheduled_post(
+        self,
+        post_id: str,
+        caption: str,
+        *,
+        published: str = "2026-08-13T09:00:00+08:00",
+    ) -> dict[str, object]:
+        post = {
+            "id": post_id,
+            "url": f"https://facebook.test/{post_id}",
+            "published_philippines": published,
+            "caption": caption,
+        }
+        post["classification"] = classify_post(post, CONFIG)
+        return post
+
+    def save_posts(self, posts: list[dict[str, object]]) -> Path:
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        path = Path(directory.name) / "klaxon_state.sqlite3"
+        initialize_state_database(path)
+        for post in posts:
+            classification = post["classification"]
+            assert isinstance(classification, dict)
+            record_scheduled_outage(path, post, classification)
+        return path
+
     def test_weather_parser_formats_official_bohol_values_compactly(self) -> None:
         weather = parse_weather_html(WEATHER_FIXTURE)
         self.assertTrue(weather["available"])
@@ -75,6 +113,68 @@ class MorningBriefTests(unittest.TestCase):
             build_power_section(power_result()),
             "Scheduled outage — Dauis — From 1:00 AM to 3:00 AM.",
         )
+
+    def test_early_announcement_is_retained_for_outage_today(self) -> None:
+        post = self.scheduled_post(
+            "early",
+            "Scheduled interruption in Dauis on August 16, 2026 from 8:00 AM to 10:00 AM.",
+        )
+        state = self.save_posts([post])
+        section = build_power_section(
+            {}, state_path=state, today=datetime(2026, 8, 16).date()
+        )
+        self.assertIn("2026-08-16 from 8:00 AM to 10:00 AM", section)
+
+    def test_future_and_past_outages_are_excluded(self) -> None:
+        posts = [
+            self.scheduled_post("future", "Scheduled interruption in Dauis on August 18, 2026 from 8:00 AM to 10:00 AM."),
+            self.scheduled_post("past", "Scheduled interruption in Dauis on August 10, 2026 from 8:00 AM to 10:00 AM."),
+        ]
+        state = self.save_posts(posts)
+        self.assertEqual(
+            build_power_section({}, state_path=state, today=datetime(2026, 8, 16).date()),
+            "No scheduled outage affecting your area.",
+        )
+
+    def test_overlapping_same_day_outages_are_both_listed(self) -> None:
+        posts = [
+            self.scheduled_post("one", "Scheduled interruption in Dauis on August 16, 2026 from 8:00 AM to 10:00 AM."),
+            self.scheduled_post("two", "Scheduled interruption in Dauis on August 16, 2026 from 9:00 AM to 11:00 AM."),
+        ]
+        state = self.save_posts(posts)
+        section = build_power_section({}, state_path=state, today=datetime(2026, 8, 16).date())
+        self.assertEqual(section.count("Scheduled outage"), 2)
+        self.assertIn("8:00 AM to 10:00 AM", section)
+        self.assertIn("9:00 AM to 11:00 AM", section)
+
+    def test_area_filter_excludes_other_locations(self) -> None:
+        post = self.scheduled_post(
+            "other-area",
+            "Scheduled interruption in Tagbilaran on August 16, 2026 from 8:00 AM to 10:00 AM.",
+        )
+        state = self.save_posts([post])
+        self.assertEqual(
+            build_power_section({}, state_path=state, today=datetime(2026, 8, 16).date()),
+            "No scheduled outage affecting your area.",
+        )
+
+    def test_reposted_same_outage_is_deduplicated(self) -> None:
+        posts = [
+            self.scheduled_post("original", "Scheduled interruption in Dauis on August 16, 2026 from 8:00 AM to 10:00 AM."),
+            self.scheduled_post("repost", "UPDATED NOTICE: planned power interruption for Dauis on August 16, 2026 from 8:00 AM to 10:00 AM."),
+        ]
+        state = self.save_posts(posts)
+        section = build_power_section({}, state_path=state, today=datetime(2026, 8, 16).date())
+        self.assertEqual(section.count("Scheduled outage"), 1)
+
+    def test_missing_date_is_explicitly_uncertain(self) -> None:
+        post = self.scheduled_post(
+            "uncertain",
+            "Scheduled interruption in Dauis from 8:00 AM to 10:00 AM.",
+        )
+        state = self.save_posts([post])
+        section = build_power_section({}, state_path=state, today=datetime(2026, 8, 13).date())
+        self.assertIn("date/time uncertain", section)
 
     def test_brief_order_header_and_cyclone_status(self) -> None:
         title, message = build_morning_brief(
