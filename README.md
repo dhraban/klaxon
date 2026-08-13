@@ -4,7 +4,9 @@ What this does
 --------------
 This Phase 1 tester opens a temporary, anonymous Chrome browser, retrieves the
 public BOHECO Facebook page, and saves recent posts as latest_post.json. The
-manual alert check scrolls the page and inspects up to five posts.
+alert check starts with the newest post. If its ID is new, the check continues
+through older posts until it reaches an already processed ID, with a five-post
+safety cap.
 
 It extracts:
 - A stable post ID and post URL
@@ -91,7 +93,13 @@ The first database run automatically imports IDs from the earlier
 
 Automated deployment
 --------------------
-The project is prepared for a free GitHub Actions deployment. It checks the
-five newest BOHECO posts every 15 minutes and keeps duplicate state in the
-Actions cache. See "DEPLOYMENT.md" for the one-time GitHub setup and the
-free-tier reliability tradeoffs.
+The project is prepared for a free GitHub Actions deployment. Every 15 minutes,
+it adaptively checks up to five BOHECO posts and stops when it reaches an ID in
+the duplicate history. New posts are processed oldest-to-newest, and duplicate
+state is kept in the Actions cache. See "DEPLOYMENT.md" for setup and free-tier
+tradeoffs.
+
+Project roadmap
+---------------
+The accepted feature set, current work, and later phases are recorded in
+"PROJECT_ROADMAP.md".
