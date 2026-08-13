@@ -14,6 +14,8 @@ from urllib.request import Request, urlopen
 
 PUSHOVER_API_URL = "https://api.pushover.net/1/messages.json"
 CREDENTIALS_PATH = Path(__file__).resolve().with_name("pushover_credentials.json")
+DEFAULT_EMERGENCY_RETRY_SECONDS = 60
+DEFAULT_EMERGENCY_EXPIRE_SECONDS = 3600
 
 
 class PushoverError(RuntimeError):
@@ -57,9 +59,18 @@ def send_notification(
     priority: int,
     url: str | None = None,
     html: bool = False,
+    retry: int | None = None,
+    expire: int | None = None,
 ) -> dict[str, object]:
-    if priority not in (0, 1):
-        raise PushoverError("Klaxon currently permits only Pushover priority 0 or 1.")
+    if priority not in (0, 1, 2):
+        raise PushoverError("Klaxon currently permits Pushover priority 0, 1, or 2.")
+    if priority == 2:
+        retry = retry if retry is not None else DEFAULT_EMERGENCY_RETRY_SECONDS
+        expire = expire if expire is not None else DEFAULT_EMERGENCY_EXPIRE_SECONDS
+        if retry < 30:
+            raise PushoverError("Pushover emergency retry must be at least 30 seconds.")
+        if expire < 30 or expire > 10800:
+            raise PushoverError("Pushover emergency expiry must be between 30 and 10800 seconds.")
 
     credentials = read_credentials()
     parameters = {
@@ -74,6 +85,9 @@ def send_notification(
         parameters["url_title"] = "Open BOHECO post"
     if html:
         parameters["html"] = "1"
+    if priority == 2:
+        parameters["retry"] = str(retry)
+        parameters["expire"] = str(expire)
 
     request = Request(
         PUSHOVER_API_URL,
@@ -100,6 +114,9 @@ def send_notification(
         "sent": True,
         "priority": priority,
         "request_id": response_data.get("request"),
+        "receipt": response_data.get("receipt"),
+        "retry": retry if priority == 2 else None,
+        "expire": expire if priority == 2 else None,
     }
 
 
@@ -108,7 +125,7 @@ def main() -> int:
     parser.add_argument(
         "--priority",
         type=int,
-        choices=(0, 1),
+        choices=(0, 1, 2),
         default=0,
         help="Pushover priority for the connection test (default: 0).",
     )
