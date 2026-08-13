@@ -1,0 +1,39 @@
+{
+  "home": {
+    "province": "Bohol",
+    "municipality": "Dauis",
+    "barangay": "Mayacabac"
+  },
+  "location_terms": [
+    "Dauis",
+    "Mayacabac"
+  ],
+  "nearby_area_terms": [],
+  "feeder_terms": [],
+  "alternate_spellings": [],
+  "outage_terms": [
+    "power interruption",
+    "emergency power interruption",
+    "manual load dropping",
+    "scheduled interruption",
+    "power will be temporarily unavailable",
+    "power outage",
+    "brownout"
+  ],
+  "scheduled_outage_terms": [
+    "scheduled interruption",
+    "scheduled power interruption",
+    "schedule of power interruption",
+    "planned interruption",
+    "planned power interruption",
+    "power will be temporarily unavailable"
+  ],
+  "emergency_outage_terms": [
+    "emergency power interruption",
+    "emergency interruption",
+    "unscheduled power interruption",
+    "manual load dropping",
+    "manual load drop"
+  ],
+  "notes": "Dauis is the primary location keyword. Mayacabac is an additional specific keyword; either one is sufficient. Bohol is recorded as the province but deliberately omitted because BOHECO and nearly every page post mention Bohol."
+}

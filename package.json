@@ -1,0 +1,9 @@
+{
+  "name": "klaxon-facebook-monitor",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Browser dependency for the Klaxon Facebook monitor",
+  "dependencies": {
+    "playwright-core": "1.62.1"
+  }
+}
