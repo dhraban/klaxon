@@ -21,6 +21,8 @@ from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 import xml.etree.ElementTree as ET
 
+from pushover_client import PushoverError, send_notification
+
 
 SOURCE_URL = "https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin"
 CAP_FEED_URL = "https://publicalert.pagasa.dost.gov.ph/feeds/"
@@ -312,6 +314,63 @@ def state_from_result(result: dict[str, object], now: datetime) -> dict[str, obj
     }
 
 
+def notification_priority(
+    mode: str, prior_state: dict[str, object], result: dict[str, object]
+) -> int:
+    """Select the alert level for one actual PAGASA fetch.
+
+    A daily detector and a three-hour elevated check are normal priority. An
+    elevated fetch is high priority only when it was scheduled in the prior
+    state as an hourly Bohol wind-signal check. The prior state matters when a
+    fetch discovers that the signal has just cleared.
+    """
+    if (
+        mode == "monitor"
+        and prior_state.get("cadence") == "hourly"
+        and prior_state.get("bohol_under_wind_signal") is True
+    ):
+        return 1
+    return 0
+
+
+def build_pushover_message(result: dict[str, object]) -> tuple[str, str]:
+    storm_name = result.get("storm_name") or "No active cyclone"
+    title = f"Klaxon: PAGASA update — {storm_name}"
+    forecast_positions = result.get("forecast_positions")
+    forecast_lines: list[str] = []
+    if isinstance(forecast_positions, list):
+        for position in forecast_positions[:4]:
+            if isinstance(position, dict):
+                forecast_lines.append(
+                    f"{position.get('forecast_window')}: "
+                    f"{position.get('latitude')}N, {position.get('longitude')}E"
+                )
+    forecast_text = "\n".join(forecast_lines) or "No forecast positions extracted."
+    message = (
+        f"{result.get('summary', 'PAGASA status updated.')}\n"
+        f"PAR status: {result.get('par_status', 'unknown')}\n"
+        f"Issued: {result.get('issued_at') or 'not provided'}\n"
+        f"Bohol official wind signal: "
+        f"{result.get('bohol_wind_signal') or 'none'}\n\n"
+        f"Forecast positions:\n{forecast_text}\n\n"
+        f"Source: {SOURCE_URL}"
+    )
+    return title, message
+
+
+def send_pushover_for_result(
+    result: dict[str, object],
+    *,
+    mode: str,
+    prior_state: dict[str, object],
+    send_function=send_notification,
+) -> dict[str, object]:
+    priority = notification_priority(mode, prior_state, result)
+    title, message = build_pushover_message(result)
+    delivery = send_function(title=title, message=message, priority=priority)
+    return {**delivery, "priority": priority}
+
+
 def read_state(state_path: Path) -> dict[str, object]:
     if not state_path.exists():
         return {}
@@ -373,6 +432,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--html-file", type=Path, help="Parse a saved bulletin page for tests.")
     parser.add_argument("--pdf-file", type=Path, help="Add extracted text from a saved bulletin PDF.")
     parser.add_argument("--force", action="store_true", help="Fetch now even when the next check is not due.")
+    parser.add_argument(
+        "--send-pushover",
+        action="store_true",
+        help="Send one Pushover update after each actual PAGASA fetch.",
+    )
     parser.add_argument("--pretty", action="store_true")
     return parser.parse_args()
 
@@ -440,11 +504,23 @@ def main() -> int:
             else None
         )
         result["monitor_mode"] = args.mode
+        if args.send_pushover:
+            result["pushover"] = send_pushover_for_result(
+                result,
+                mode=args.mode,
+                prior_state=state,
+            )
+        else:
+            result["pushover"] = {
+                "sent": False,
+                "priority": notification_priority(args.mode, state, result),
+                "reason": "Pushover sending was not requested.",
+            }
         write_json(args.state_file, state_from_result(result, now))
         write_json(args.output, result)
         print(json.dumps(result, indent=2 if args.pretty else None, ensure_ascii=False))
         return 0
-    except (OSError, PagasaError, ValueError) as error:
+    except (OSError, PagasaError, PushoverError, ValueError) as error:
         print(f"Klaxon PAGASA check stopped: {error}", file=sys.stderr)
         return 1
 

@@ -5,12 +5,15 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from datetime import datetime, timezone
 
 from pagasa_cyclone_check import (
     build_result,
+    notification_priority,
     next_due_at,
     parse_html,
+    send_pushover_for_result,
     state_from_result,
 )
 
@@ -119,13 +122,86 @@ class PagasaCheckerTests(unittest.TestCase):
                     "--output",
                     str(output_path),
                 ]
-                with contextlib.redirect_stdout(io.StringIO()):
-                    self.assertEqual(main(), 0)
+                with patch("pagasa_cyclone_check.send_pushover_for_result") as send_mock:
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        self.assertEqual(main(), 0)
+                    send_mock.assert_not_called()
             finally:
                 sys.argv = old_argv
             result = json.loads(output_path.read_text(encoding="utf-8"))
             self.assertFalse(result["checked"])
             self.assertIn("no PAGASA fetch", result["summary"])
+
+    def test_daily_and_three_hour_checks_use_priority_zero(self) -> None:
+        text, _ = parse_html(ACTIVE_IN_PAR)
+        result = build_result(text, checked_at="2026-08-13T00:00:00Z")
+        self.assertEqual(notification_priority("daily-detector", {}, result), 0)
+        prior_state = {
+            "cadence": "every_3_hours",
+            "bohol_under_wind_signal": False,
+        }
+        self.assertEqual(notification_priority("monitor", prior_state, result), 0)
+
+    def test_due_hourly_bohol_check_uses_priority_one(self) -> None:
+        text, _ = parse_html(BOHOL_SIGNAL)
+        result = build_result(text, checked_at="2026-08-13T00:00:00Z")
+        prior_state = {
+            "cadence": "hourly",
+            "bohol_under_wind_signal": True,
+        }
+        calls = []
+
+        def fake_send(**kwargs):
+            calls.append(kwargs)
+            return {"sent": True, "request_id": "test"}
+
+        delivery = send_pushover_for_result(
+            result,
+            mode="monitor",
+            prior_state=prior_state,
+            send_function=fake_send,
+        )
+        self.assertEqual(delivery["priority"], 1)
+        self.assertEqual(calls[0]["priority"], 1)
+
+    def test_noop_monitor_does_not_send_pushover(self) -> None:
+        from pagasa_cyclone_check import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            directory_path = Path(directory)
+            state_path = directory_path / "state.json"
+            output_path = directory_path / "output.json"
+            state_path.write_text(
+                json.dumps(
+                    {
+                        "monitoring_enabled": False,
+                        "active_cyclone": False,
+                        "par_status": "none_active",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "pagasa_cyclone_check.py",
+                    "--mode",
+                    "monitor",
+                    "--state-file",
+                    str(state_path),
+                    "--output",
+                    str(output_path),
+                    "--send-pushover",
+                ]
+                with patch("pagasa_cyclone_check.send_pushover_for_result") as send_mock:
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        self.assertEqual(main(), 0)
+                    send_mock.assert_not_called()
+            finally:
+                sys.argv = old_argv
+            result = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertFalse(result["checked"])
+            self.assertNotIn("pushover", result)
 
 
 if __name__ == "__main__":

@@ -113,4 +113,6 @@ positions, and official Bohol wind-signal status. A separate elevated monitor
 uses the persisted state for three-hour checks while a cyclone is in PAR and
 hourly checks when Bohol is under an official wind signal. Its GitHub schedule
 is fixed hourly, but it does not fetch PAGASA while elevated monitoring is off
-or while its next check is not due.
+or while its next check is not due. Each actual check sends a Pushover update:
+priority 0 for the daily and three-hour checks, and priority 1 only for an
+hourly check caused by an official Bohol wind signal.

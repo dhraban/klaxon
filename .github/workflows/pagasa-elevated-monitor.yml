@@ -14,6 +14,9 @@ jobs:
   monitor-cyclone:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    env:
+      PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
+      PUSHOVER_APPLICATION_TOKEN: ${{ secrets.PUSHOVER_APPLICATION_TOKEN }}
     steps:
       - name: Download Klaxon
         uses: actions/checkout@v4
@@ -35,6 +38,7 @@ jobs:
           --mode monitor
           --state-file pagasa_state.json
           --output pagasa_monitor.json
+          --send-pushover
           --pretty
 
       - name: Preserve PAGASA monitor state
