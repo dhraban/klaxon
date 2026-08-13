@@ -277,16 +277,22 @@ def classify_post(
 def build_pushover_message(
     post: dict[str, object], classification: dict[str, object]
 ) -> tuple[str, str]:
-    outage_type = classification["outage_type"]
-    title_type = "Emergency" if outage_type == "emergency" else "Scheduled"
-    title = f"Klaxon: {title_type} outage for Dauis"
+    outage_type = classification.get("outage_type")
+    if outage_type == "emergency":
+        title_type = "Emergency"
+    elif outage_type in {"scheduled", "unspecified"}:
+        title_type = "Scheduled"
+    else:
+        title_type = "Not specified"
+    title = "Electricity update"
 
     locations = classification.get("matched_location_terms", [])
     if not isinstance(locations, list):
         locations = []
-    location_text = ", ".join(str(value) for value in locations) or "Dauis area"
+    location_text = ", ".join(str(value) for value in locations) or "Not specified"
 
-    published = post.get("published_philippines", "Time unavailable")
+    published = post.get("published_philippines")
+    published_text = str(published).strip() if published else "Not specified"
     caption = post.get("caption", "")
     if not isinstance(caption, str):
         caption = ""
@@ -294,11 +300,37 @@ def build_pushover_message(
     if len(compact_caption) > 650:
         compact_caption = compact_caption[:647] + "..."
 
+    time_window_match = re.search(
+        r"\bfrom\s+([^.;\n]{1,100}?)\s+to\s+([^.;\n]{1,100})",
+        caption,
+        re.IGNORECASE,
+    )
+    if time_window_match:
+        when_text = (
+            f"From {time_window_match.group(1).strip()} to "
+            f"{time_window_match.group(2).strip()}"
+        )
+        if published_text != "Not specified":
+            when_text += f" (post published {published_text})"
+    else:
+        when_text = (
+            f"Post published {published_text}"
+            if published_text != "Not specified"
+            else "Not specified"
+        )
+
+    status_text = (
+        "Power interruption reported"
+        if classification.get("is_power_interruption") is True
+        else "Not specified"
+    )
+
     message = (
-        f"BOHECO outage affecting: {location_text}\n"
         f"Type: {title_type}\n"
-        f"Published: {published}\n\n"
-        f"{compact_caption}"
+        f"Status: {status_text}\n"
+        f"Where: {location_text}\n"
+        f"When: {when_text}\n\n"
+        f"{compact_caption or 'Not specified'}"
     )
     return title, message
 
