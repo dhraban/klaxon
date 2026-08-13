@@ -14,6 +14,7 @@ from klaxon_facebook_test import (
     load_filter_config,
     load_processed_post_ids,
     record_processed_post_id,
+    select_new_posts_until_known,
 )
 
 
@@ -183,6 +184,32 @@ def main() -> int:
     print(
         ("PASS" if retention_test_passed else "FAIL")
         + ": retain_only_20_newest_post_ids"
+    )
+
+    adaptive_posts = [
+        {"id": "newest"},
+        {"id": "second-newest"},
+        {"id": "already-seen"},
+        {"id": "older-unseen"},
+    ]
+    adaptive_result = select_new_posts_until_known(
+        adaptive_posts, {"already-seen"}
+    )
+    adaptive_test_passed = [post["id"] for post in adaptive_result] == [
+        "second-newest",
+        "newest",
+    ]
+    all_passed = all_passed and adaptive_test_passed
+    results.append(
+        {
+            "name": "adaptive_sweep_stops_at_seen_id",
+            "passed": adaptive_test_passed,
+            "selected_ids": [post["id"] for post in adaptive_result],
+        }
+    )
+    print(
+        ("PASS" if adaptive_test_passed else "FAIL")
+        + ": adaptive_sweep_stops_at_seen_id"
     )
 
     output = {

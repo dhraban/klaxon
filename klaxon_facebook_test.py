@@ -457,7 +457,9 @@ def deliver_post_if_new(
     return {**delivery, "duplicate": False}
 
 
-def fetch_rendered_page(post_limit: int = 1) -> str:
+def fetch_rendered_page(
+    post_limit: int = 1, stop_post_ids: set[str] | None = None
+) -> str:
     if not CHROME_PATH.is_file():
         raise KlaxonTestError(
             "Google Chrome was not found in Applications. Install Chrome, then try again."
@@ -485,6 +487,9 @@ def fetch_rendered_page(post_limit: int = 1) -> str:
                         str(post_limit),
                         str(PLAYWRIGHT_PATH),
                         str(CHROME_PATH),
+                        f"{PAGE_URL}/posts",
+                        "24",
+                        ",".join(sorted(stop_post_ids or set())),
                     ],
                     capture_output=True,
                     text=True,
@@ -680,6 +685,21 @@ def extract_post(rendered_html: str) -> dict[str, object]:
     return {"source": result["source"], "post": posts[0]}
 
 
+def select_new_posts_until_known(
+    posts: list[dict[str, object]], processed_post_ids: set[str]
+) -> list[dict[str, object]]:
+    """Return the newest unseen run, ordered oldest-to-newest for delivery."""
+    unseen_newest_first: list[dict[str, object]] = []
+    for post in posts:
+        raw_post_id = post.get("id")
+        if not isinstance(raw_post_id, (str, int)):
+            raise KlaxonTestError("The Facebook post has no usable stable ID.")
+        if str(raw_post_id) in processed_post_ids:
+            break
+        unseen_newest_first.append(post)
+    return list(reversed(unseen_newest_first))
+
+
 def parse_args() -> argparse.Namespace:
     script_dir = Path(__file__).resolve().parent
     default_output = script_dir / "latest_post.json"
@@ -727,19 +747,35 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     try:
+        processed_post_ids = (
+            load_processed_post_ids(args.state_file) if args.send_pushover else set()
+        )
         if args.input_html:
             rendered_html = args.input_html.read_text(encoding="utf-8")
         else:
             print(
                 "Opening an anonymous temporary browser for BOHECO "
-                f"and requesting {args.post_limit} post(s)..."
+                f"and adaptively checking up to {args.post_limit} post(s)..."
             )
-            rendered_html = fetch_rendered_page(args.post_limit)
+            rendered_html = fetch_rendered_page(
+                args.post_limit,
+                processed_post_ids if args.send_pushover else None,
+            )
 
         result = extract_posts(rendered_html, args.post_limit)
         config = load_filter_config(args.config)
-        posts = result["posts"]
-        assert isinstance(posts, list)
+        scanned_posts = result["posts"]
+        assert isinstance(scanned_posts, list)
+        posts = (
+            select_new_posts_until_known(scanned_posts, processed_post_ids)
+            if args.send_pushover
+            else scanned_posts
+        )
+        result["scanned_post_count"] = len(scanned_posts)
+        result["new_post_count"] = len(posts)
+        result["stopped_at_processed_post"] = len(posts) < len(scanned_posts)
+        result["posts"] = posts
+        result["extracted_post_count"] = len(posts)
         for post_for_classification in posts:
             assert isinstance(post_for_classification, dict)
             classification = classify_post(post_for_classification, config)
@@ -764,7 +800,8 @@ def main() -> int:
 
         print(
             "Klaxon Facebook test succeeded. "
-            f"Extracted {result['extracted_post_count']} post(s)."
+            f"Scanned {result['scanned_post_count']} post(s); "
+            f"found {result['new_post_count']} new post(s)."
         )
         for index, post in enumerate(posts, start=1):
             assert isinstance(post, dict)

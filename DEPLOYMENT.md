@@ -1,9 +1,9 @@
 # Klaxon deployment
 
 Klaxon runs on GitHub Actions every 15 minutes at minutes 7, 22, 37, and 52 of
-each hour. The cheap deployment mode checks the newest BOHECO post each time.
-Handling multiple posts published inside one interval remains a deferred design
-question.
+each hour. Each run checks the newest BOHECO post first. If that ID is new, it
+continues through older posts until it reaches an already processed ID. A
+five-post safety cap bounds the work, and new posts are handled oldest-to-newest.
 
 ## One-time GitHub setup
 

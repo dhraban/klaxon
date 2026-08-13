@@ -12,7 +12,9 @@ This includes:
 - Emergency-outage priority 1 notifications
 - Email auto-forwarding to Pushover
 - Anonymous BOHECO Facebook access
-- Newest-post polling every 15 minutes
+- Adaptive recent-post polling every 15 minutes
+- Continued sweeping after a new ID until a processed ID is reached
+- Five-post safety cap with oldest-to-newest processing
 - Caption and Facebook image-accessibility-text inspection
 - Dauis and Mayacabac location matching
 - Deterministic outage filtering
@@ -22,14 +24,6 @@ This includes:
 - Encrypted Pushover credentials in GitHub Secrets
 
 There are no partially complete features being tracked.
-
-## Current work
-
-### Handle multiple posts inside one 15-minute interval
-
-Klaxon currently checks the newest BOHECO post. We need a reliable way to find
-and process every unseen post when BOHECO publishes more than one post between
-polling runs.
 
 ## Planned reliability feature
 

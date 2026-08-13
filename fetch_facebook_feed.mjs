@@ -14,9 +14,23 @@ const chromePath =
     : "/usr/bin/google-chrome");
 const pageUrl =
   process.argv[6] || "https://www.facebook.com/BOHECO1officialpage/posts";
+const maxAttempts = Number.parseInt(process.argv[7] || "24", 10);
+const stopPostIds = new Set(
+  (process.argv[8] || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
+);
 
-if (!outputPath || !playwrightPath || !Number.isInteger(targetCount)) {
-  throw new Error("Expected output path, post count, and Playwright path.");
+if (
+  !outputPath ||
+  !playwrightPath ||
+  !Number.isInteger(targetCount) ||
+  !Number.isInteger(maxAttempts)
+) {
+  throw new Error(
+    "Expected output path, post count, Playwright path, and scroll-attempt count.",
+  );
 }
 
 const require = createRequire(import.meta.url);
@@ -36,8 +50,9 @@ try {
 
   const snapshots = [];
   const observedPostIds = new Set();
+  let encounteredStopId = null;
 
-  for (let attempt = 0; attempt < 24; attempt += 1) {
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     await page.waitForTimeout(attempt === 0 ? 5000 : 1600);
     const html = await page.content();
     const snapshotIds = new Set(
@@ -45,11 +60,13 @@ try {
     );
     const priorCount = observedPostIds.size;
     for (const postId of snapshotIds) observedPostIds.add(postId);
+    encounteredStopId =
+      Array.from(snapshotIds).find((postId) => stopPostIds.has(postId)) || null;
 
     if (snapshots.length === 0 || observedPostIds.size > priorCount) {
       snapshots.push(html);
     }
-    if (observedPostIds.size >= targetCount) break;
+    if (encounteredStopId || observedPostIds.size >= targetCount) break;
 
     await page.evaluate(() => {
       window.scrollBy(0, Math.max(window.innerHeight * 0.85, 750));
@@ -65,6 +82,7 @@ try {
     JSON.stringify({
       snapshotCount: snapshots.length,
       uniquePostCount: observedPostIds.size,
+      encounteredStopId,
     }),
   );
 } finally {
