@@ -19,21 +19,12 @@ jobs:
     timeout-minutes: 5
     env:
       KLAXON_CHROME_PATH: /usr/bin/google-chrome
-      KLAXON_PLAYWRIGHT_PATH: ${{ github.workspace }}/node_modules/playwright-core
       PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
       PUSHOVER_APPLICATION_TOKEN: ${{ secrets.PUSHOVER_APPLICATION_TOKEN }}
 
     steps:
       - name: Download Klaxon
         uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install browser controller
-        run: npm install --ignore-scripts --no-audit --no-fund
 
       - name: Restore duplicate history
         id: restore-state
@@ -44,10 +35,10 @@ jobs:
           restore-keys: |
             klaxon-state-
 
-      - name: Check the five newest BOHECO posts
+      - name: Check the newest BOHECO post
         run: >-
           python3 klaxon_facebook_test.py
-          --post-limit 5
+          --post-limit 1
           --send-pushover
           --output latest_post.json
 
