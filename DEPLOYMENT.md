@@ -60,18 +60,3 @@ forecast center; it does not claim landfall or arrival.
 
 The one-shot `--test-pushover` mode is reserved for manual testing. It sends
 one clearly labeled priority-0 sample and does not change monitor state.
-
-PHIVOLCS tsunami monitoring
----------------------------
-The separate `Klaxon PHIVOLCS tsunami monitor` workflow polls the official
-PHIVOLCS tsunami-information page every 15 minutes and selects its newest
-official HTML bulletin. It sends priority 2 with a 60-second retry and
-3,600-second expiry only when the bulletin heading explicitly says
-`TSUNAMI WARNING` and its affected-area section names Bohol. The Pushover
-receipt is retained in `phivolcs_tsunami_state.json` so acknowledgement or
-cancellation can be added later.
-
-No notification is sent for `NO TSUNAMI THREAT`, minor sea-level advisories,
-warnings without Bohol, duplicate warnings, or unrecognized formats. This is
-bulletin monitoring, not a guarantee of pre-arrival tsunami warning; the
-workflow can be delayed by GitHub Actions scheduling and PHIVOLCS publication.

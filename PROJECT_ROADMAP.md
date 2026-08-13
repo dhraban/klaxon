@@ -42,10 +42,6 @@ brief.
   Responsibility (PAR) — detector and separate elevated monitor implemented;
   morning-summary notification remains a later integration
 - Earthquake warning
-- Tsunami warning — official PHIVOLCS bulletin monitor implemented; only an
-  explicit `TSUNAMI WARNING` naming Bohol sends a priority-2 emergency alert,
-  with the Pushover receipt retained for later acknowledgement/cancellation
-  support
 
 ## Phase 3
 

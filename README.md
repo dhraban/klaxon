@@ -126,17 +126,3 @@ For a one-time end-to-end sample notification, run
 `python3 pagasa_cyclone_check.py --test-pushover`. It sends one priority-0
 message labeled "TEST ONLY" with representative active-in-PAR content and
 does not fetch PAGASA or modify monitor state.
-
-PHIVOLCS tsunami checker
-------------------------
-The separate `phivolcs_tsunami_monitor.yml` workflow checks the official
-PHIVOLCS tsunami bulletin page every 15 minutes. It sends a Pushover priority
-2 emergency notification only when the current bulletin explicitly says
-"TSUNAMI WARNING" and lists Bohol among the affected areas. The emergency
-retry/expiry values are 60 seconds and 1 hour, and the returned Pushover
-receipt is stored for future acknowledgement or cancellation handling.
-
-"NO TSUNAMI THREAT", minor sea-level advisories, warnings that do not name
-Bohol, duplicate warnings, and unrecognized bulletin formats are silent. The
-checker includes the official-source link and states that it cannot guarantee
-pre-arrival warning reliability. It does not send a test priority-2 alert.
