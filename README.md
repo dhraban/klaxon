@@ -103,3 +103,14 @@ Project roadmap
 ---------------
 The accepted feature set, current work, and later phases are recorded in
 "PROJECT_ROADMAP.md".
+
+PAGASA cyclone checker
+----------------------
+The daily detector runs at 6:55 AM Bohol time and writes
+"pagasa_daily_detector.json". It checks the official PAGASA tropical-cyclone
+bulletin and records the storm name, PAR status, issue time, forecast
+positions, and official Bohol wind-signal status. A separate elevated monitor
+uses the persisted state for three-hour checks while a cyclone is in PAR and
+hourly checks when Bohol is under an official wind signal. Its GitHub schedule
+is fixed hourly, but it does not fetch PAGASA while elevated monitoring is off
+or while its next check is not due.

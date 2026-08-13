@@ -1,0 +1,45 @@
+name: Klaxon PAGASA elevated monitor
+
+on:
+  schedule:
+    # GitHub cron is static. The monitor wakes hourly except at 6:55 AM PHT,
+    # when the separate daily detector owns the state transition.
+    - cron: "55 0-21,23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  monitor-cyclone:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Download Klaxon
+        uses: actions/checkout@v4
+
+      - name: Restore PAGASA monitor state
+        uses: actions/cache/restore@v4
+        with:
+          path: pagasa_state.json
+          key: pagasa-state-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            pagasa-state-
+
+      - name: Install PDF reader
+        run: python3 -m pip install --disable-pip-version-check --no-warn-script-location -r requirements.txt
+
+      - name: Run separate elevated monitor
+        run: >-
+          python3 pagasa_cyclone_check.py
+          --mode monitor
+          --state-file pagasa_state.json
+          --output pagasa_monitor.json
+          --pretty
+
+      - name: Preserve PAGASA monitor state
+        if: ${{ always() && hashFiles('pagasa_state.json') != '' }}
+        uses: actions/cache/save@v4
+        with:
+          path: pagasa_state.json
+          key: pagasa-state-${{ github.run_id }}-${{ github.run_attempt }}

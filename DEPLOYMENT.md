@@ -35,3 +35,17 @@ occasionally and re-enable the workflow if GitHub pauses it.
 Pushover credentials are encrypted repository secrets and are not committed to
 the repository. The Klaxon source, location keywords, and seed post IDs are
 public in this free configuration.
+
+PAGASA cyclone monitoring
+-------------------------
+The PAGASA detector runs separately every day at 6:55 AM Bohol time (22:55
+UTC). It checks the official tropical-cyclone bulletin and records structured
+JSON state for the later morning brief. When a cyclone is inside PAR, it turns
+on the separate elevated monitor. That monitor wakes on a fixed hourly GitHub
+schedule, but it makes no PAGASA request unless the persisted state says
+elevated monitoring is enabled and the next three-hour or hourly check is due.
+
+The daily detector disables elevated monitoring when no active cyclone remains
+inside PAR. GitHub Actions schedules are static, so the hourly monitor job can
+still appear in the Actions history as a no-op; only its PAGASA fetch is
+suppressed outside active monitoring.

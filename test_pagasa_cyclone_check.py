@@ -1,0 +1,132 @@
+import contextlib
+import io
+import json
+from pathlib import Path
+import sys
+import tempfile
+import unittest
+from datetime import datetime, timezone
+
+from pagasa_cyclone_check import (
+    build_result,
+    next_due_at,
+    parse_html,
+    state_from_result,
+)
+
+
+NO_ACTIVE = """
+<html><body>
+<h1>Tropical Cyclone Bulletin</h1>
+<p>No Active Tropical Cyclone within the Philippine Area of Responsibility</p>
+</body></html>
+"""
+
+ACTIVE_IN_PAR = """
+<html><body>
+<h1>Tropical Cyclone Bulletin</h1>
+<p>Tropical Storm TESTING is within the Philippine Area of Responsibility.</p>
+<p>Issued at 5:00 AM, 13 August 2026. Valid for broadcast until the next bulletin.</p>
+<p>12-Hour Forecast 5:00 PM 13 August 2026 12.5 124.5 East of Bohol</p>
+<p>24-Hour Forecast 5:00 AM 14 August 2026 13.0 124.0 Northeast of Bohol</p>
+<p>TROPICAL CYCLONE WIND SIGNALS IN EFFECT: None</p>
+</body></html>
+"""
+
+BOHOL_SIGNAL = """
+<html><body>
+<h1>Tropical Cyclone Bulletin</h1>
+<p>Typhoon TESTING is inside PAR.</p>
+<p>Issued at 6:00 AM, 13 August 2026. Valid for broadcast until the next bulletin.</p>
+<p>12-Hour Forecast 6:00 PM 13 August 2026 10.5 124.0 Near Bohol</p>
+<p>TROPICAL CYCLONE WIND SIGNALS IN EFFECT</p>
+<p>TCWS No. 2: Bohol, Cebu, and nearby areas</p>
+<p>OTHER HAZARDS AFFECTING LAND AREAS</p>
+</body></html>
+"""
+
+
+class PagasaCheckerTests(unittest.TestCase):
+    def test_no_active_par_uses_daily_cadence(self) -> None:
+        text, _ = parse_html(NO_ACTIVE)
+        result = build_result(text, checked_at="2026-08-13T00:00:00Z")
+        self.assertFalse(result["active_cyclone"])
+        self.assertEqual(result["par_status"], "none_active")
+        self.assertEqual(result["cadence"], "daily")
+
+    def test_active_cyclone_in_par_uses_three_hour_cadence(self) -> None:
+        text, _ = parse_html(ACTIVE_IN_PAR)
+        result = build_result(text, checked_at="2026-08-13T00:00:00Z")
+        self.assertTrue(result["active_cyclone"])
+        self.assertEqual(result["storm_name"], "TESTING")
+        self.assertEqual(result["par_status"], "inside")
+        self.assertEqual(result["cadence"], "every_3_hours")
+        self.assertEqual(len(result["forecast_positions"]), 2)
+        self.assertEqual(result["forecast_positions"][0]["latitude"], 12.5)
+        self.assertFalse(result["bohol_under_wind_signal"])
+
+    def test_bohol_wind_signal_uses_hourly_cadence(self) -> None:
+        text, _ = parse_html(BOHOL_SIGNAL)
+        result = build_result(text, checked_at="2026-08-13T00:00:00Z")
+        self.assertTrue(result["bohol_under_wind_signal"])
+        self.assertEqual(result["bohol_wind_signal"], 2)
+        self.assertEqual(result["cadence"], "hourly")
+
+    def test_adaptive_state_skipping_is_safe(self) -> None:
+        due = next_due_at(datetime(2026, 8, 13, 0, 0, tzinfo=timezone.utc), "daily")
+        self.assertEqual(due, "2026-08-14T00:00:00Z")
+
+    def test_detector_enables_separate_monitor_for_par_cyclone(self) -> None:
+        text, _ = parse_html(ACTIVE_IN_PAR)
+        result = build_result(text, checked_at="2026-08-13T00:00:00Z")
+        state = state_from_result(result, datetime(2026, 8, 13, 0, 0, tzinfo=timezone.utc))
+        self.assertTrue(state["monitoring_enabled"])
+        self.assertEqual(state["cadence"], "every_3_hours")
+        self.assertEqual(state["next_monitor_check_at_utc"], "2026-08-13T03:00:00Z")
+
+    def test_detector_disables_monitor_when_par_is_clear(self) -> None:
+        text, _ = parse_html(NO_ACTIVE)
+        result = build_result(text, checked_at="2026-08-13T00:00:00Z")
+        state = state_from_result(result, datetime(2026, 8, 13, 0, 0, tzinfo=timezone.utc))
+        self.assertFalse(state["monitoring_enabled"])
+        self.assertIsNone(state["next_monitor_check_at_utc"])
+
+    def test_disabled_monitor_is_a_no_fetch_noop(self) -> None:
+        from pagasa_cyclone_check import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            directory_path = Path(directory)
+            state_path = directory_path / "state.json"
+            output_path = directory_path / "output.json"
+            state_path.write_text(
+                json.dumps(
+                    {
+                        "monitoring_enabled": False,
+                        "active_cyclone": False,
+                        "par_status": "none_active",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "pagasa_cyclone_check.py",
+                    "--mode",
+                    "monitor",
+                    "--state-file",
+                    str(state_path),
+                    "--output",
+                    str(output_path),
+                ]
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(main(), 0)
+            finally:
+                sys.argv = old_argv
+            result = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertFalse(result["checked"])
+            self.assertIn("no PAGASA fetch", result["summary"])
+
+
+if __name__ == "__main__":
+    unittest.main()

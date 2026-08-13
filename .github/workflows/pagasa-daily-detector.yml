@@ -1,0 +1,44 @@
+name: Klaxon PAGASA daily detector
+
+on:
+  schedule:
+    # 6:55 AM Bohol time (UTC+8) = 10:55 PM UTC.
+    - cron: "55 22 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  detect-cyclone:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Download Klaxon
+        uses: actions/checkout@v4
+
+      - name: Restore PAGASA monitor state
+        uses: actions/cache/restore@v4
+        with:
+          path: pagasa_state.json
+          key: pagasa-state-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            pagasa-state-
+
+      - name: Install PDF reader
+        run: python3 -m pip install --disable-pip-version-check --no-warn-script-location -r requirements.txt
+
+      - name: Run daily PAGASA detector
+        run: >-
+          python3 pagasa_cyclone_check.py
+          --mode daily-detector
+          --state-file pagasa_state.json
+          --output pagasa_daily_detector.json
+          --pretty
+
+      - name: Preserve PAGASA monitor state
+        if: ${{ always() && hashFiles('pagasa_state.json') != '' }}
+        uses: actions/cache/save@v4
+        with:
+          path: pagasa_state.json
+          key: pagasa-state-${{ github.run_id }}-${{ github.run_attempt }}

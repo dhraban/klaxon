@@ -39,7 +39,8 @@ brief.
 ### Natural-disaster warnings
 
 - Hurricane/typhoon warning when a storm enters the Philippine Area of
-  Responsibility (PAR)
+  Responsibility (PAR) — detector and separate elevated monitor implemented;
+  morning-summary notification remains a later integration
 - Earthquake warning
 - Tsunami warning
 
