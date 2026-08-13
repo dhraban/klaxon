@@ -51,7 +51,12 @@ def read_credentials() -> dict[str, str]:
 
 
 def send_notification(
-    *, title: str, message: str, priority: int, url: str | None = None
+    *,
+    title: str,
+    message: str,
+    priority: int,
+    url: str | None = None,
+    html: bool = False,
 ) -> dict[str, object]:
     if priority not in (0, 1):
         raise PushoverError("Klaxon currently permits only Pushover priority 0 or 1.")
@@ -67,6 +72,8 @@ def send_notification(
     if url:
         parameters["url"] = url
         parameters["url_title"] = "Open BOHECO post"
+    if html:
+        parameters["html"] = "1"
 
     request = Request(
         PUSHOVER_API_URL,

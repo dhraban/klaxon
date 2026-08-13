@@ -279,11 +279,11 @@ def build_pushover_message(
 ) -> tuple[str, str]:
     outage_type = classification.get("outage_type")
     if outage_type == "emergency":
-        title_type = "Emergency"
+        title_type = "Emergency outage"
     elif outage_type in {"scheduled", "unspecified"}:
-        title_type = "Scheduled"
+        title_type = "Scheduled outage"
     else:
-        title_type = "Not specified"
+        title_type = "Not specified outage"
     title = "Electricity update"
 
     locations = classification.get("matched_location_terms", [])
@@ -326,11 +326,11 @@ def build_pushover_message(
     )
 
     message = (
-        f"Type: {title_type}\n"
-        f"Status: {status_text}\n"
-        f"Where: {location_text}\n"
-        f"When: {when_text}\n\n"
-        f"{compact_caption or 'Not specified'}"
+        f"<b>{html_module.escape(title_type, quote=False)}</b>\n"
+        f"<b>Status:</b> {html_module.escape(status_text, quote=False)}\n"
+        f"<b>Where:</b> {html_module.escape(location_text, quote=False)}\n"
+        f"<b>When:</b> {html_module.escape(when_text, quote=False)}\n\n"
+        f"{html_module.escape(compact_caption or 'Not specified', quote=False)}"
     )
     return title, message
 
@@ -546,6 +546,7 @@ def deliver_post_if_new(
         message=message,
         priority=priority,
         url=post_url if isinstance(post_url, str) else None,
+        html=True,
     )
     record_processed_post_id(
         state_path,
