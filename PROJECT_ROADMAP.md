@@ -29,11 +29,12 @@ There are no partially complete features being tracked.
 
 ### Watcher run-count warning
 
-Once per day or every other day, compare the number of completed Klaxon runs
-with the expected number. Send a normal warning if the actual count is more
-than 10% below the expected count.
+Once per day at 7:15 AM Philippine time, compare the number of scheduled
+Facebook sweeps with the expected number. Send a normal warning if the actual
+count is more than 10% below the expected count, then reset the counter.
 
-Frequency still to decide: daily or every other day.
+The health check is kept separate so it can later feed into the overall daily
+brief.
 
 ### Natural-disaster warnings
 

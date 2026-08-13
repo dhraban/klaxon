@@ -83,6 +83,7 @@ DEFAULT_STATE_PATH = Path(__file__).resolve().with_name("klaxon_state.sqlite3")
 LEGACY_STATE_PATH = Path(__file__).resolve().with_name("processed_posts.json")
 SEED_STATE_PATH = Path(__file__).resolve().with_name("seed_processed_posts.json")
 MAX_PROCESSED_POST_IDS = 20
+WATCHER_COUNTER_NAME = "facebook_sweeps"
 
 POST_META_PATTERN = re.compile(
     r'"post_id":"(?P<post_id>\d+)","creation_time":(?P<created>\d+)'
@@ -318,6 +319,24 @@ def initialize_state_database(state_path: Path) -> None:
             )
             """
         )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS watcher_run_counter (
+                counter_name TEXT PRIMARY KEY,
+                period_started_at_utc TEXT NOT NULL,
+                run_count INTEGER NOT NULL DEFAULT 0,
+                last_run_at_utc TEXT
+            )
+            """
+        )
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO watcher_run_counter (
+                counter_name, period_started_at_utc, run_count, last_run_at_utc
+            ) VALUES (?, ?, 0, NULL)
+            """,
+            (WATCHER_COUNTER_NAME, dt.datetime.now(dt.timezone.utc).isoformat()),
+        )
 
         seed_state_path = (
             LEGACY_STATE_PATH if LEGACY_STATE_PATH.exists() else SEED_STATE_PATH
@@ -354,6 +373,55 @@ def initialize_state_database(state_path: Path) -> None:
                 """,
                 [(post_id, imported_at) for post_id in legacy_ids],
             )
+
+
+def record_scheduled_watcher_run(state_path: Path) -> None:
+    """Count one scheduled Facebook sweep in the persistent state database."""
+    initialize_state_database(state_path)
+    recorded_at = dt.datetime.now(dt.timezone.utc).isoformat()
+    with sqlite3.connect(state_path) as connection:
+        connection.execute(
+            """
+            UPDATE watcher_run_counter
+            SET run_count = run_count + 1, last_run_at_utc = ?
+            WHERE counter_name = ?
+            """,
+            (recorded_at, WATCHER_COUNTER_NAME),
+        )
+
+
+def read_watcher_run_counter(state_path: Path) -> dict[str, object]:
+    initialize_state_database(state_path)
+    with sqlite3.connect(state_path) as connection:
+        row = connection.execute(
+            """
+            SELECT period_started_at_utc, run_count, last_run_at_utc
+            FROM watcher_run_counter
+            WHERE counter_name = ?
+            """,
+            (WATCHER_COUNTER_NAME,),
+        ).fetchone()
+    if row is None:
+        raise KlaxonTestError("The watcher run counter could not be initialized.")
+    return {
+        "period_started_at_utc": str(row[0]),
+        "run_count": int(row[1]),
+        "last_run_at_utc": str(row[2]) if row[2] is not None else None,
+    }
+
+
+def reset_watcher_run_counter(state_path: Path) -> None:
+    initialize_state_database(state_path)
+    reset_at = dt.datetime.now(dt.timezone.utc).isoformat()
+    with sqlite3.connect(state_path) as connection:
+        connection.execute(
+            """
+            UPDATE watcher_run_counter
+            SET period_started_at_utc = ?, run_count = 0, last_run_at_utc = NULL
+            WHERE counter_name = ?
+            """,
+            (reset_at, WATCHER_COUNTER_NAME),
+        )
 
 
 def load_processed_post_ids(state_path: Path) -> set[str]:

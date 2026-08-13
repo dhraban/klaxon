@@ -5,6 +5,11 @@ each hour. Each run checks the newest BOHECO post first. If that ID is new, it
 continues through older posts until it reaches an already processed ID. A
 five-post safety cap bounds the work, and new posts are handled oldest-to-newest.
 
+At 7:15 AM Philippine time, a separate health-check run audits the previous
+day's sweep counter. It expects 96 scheduled sweeps and sends a normal Pushover
+warning when the count is more than 10% below that target. The counter is then
+reset for the next audit period. Manual workflow runs do not affect the counter.
+
 ## One-time GitHub setup
 
 1. Create a public repository named `klaxon`.
