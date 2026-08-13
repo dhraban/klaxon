@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-13
 
-## Accepted and complete
+## Phase 1 — complete
 
 The current Klaxon implementation is accepted as complete in its present form.
 This includes:
@@ -25,7 +25,7 @@ This includes:
 
 There are no partially complete features being tracked.
 
-## Planned reliability feature
+## Phase 2
 
 ### Watcher run-count warning
 
@@ -35,10 +35,19 @@ than 10% below the expected count.
 
 Frequency still to decide: daily or every other day.
 
+### Natural-disaster warnings
+
+- Hurricane/typhoon warning when a storm enters the Philippine Area of
+  Responsibility (PAR)
+- Earthquake warning
+- Tsunami warning
+
 ## Phase 3
 
 - Read and classify email contents
 - Add Messages/iMessage or other approved input sources
+- Send a daily 7:30 AM Philippine-time Pushover summary of upcoming scheduled
+  power outages
 
 ## Phase 4
 
