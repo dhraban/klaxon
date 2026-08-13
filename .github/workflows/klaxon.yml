@@ -35,10 +35,10 @@ jobs:
           restore-keys: |
             klaxon-state-
 
-      - name: Check the newest BOHECO post
+      - name: Check new BOHECO posts
         run: >-
           python3 klaxon_facebook_test.py
-          --post-limit 1
+          --post-limit 5
           --send-pushover
           --output latest_post.json
 
