@@ -1,0 +1,285 @@
+<section id="klaxon-roadmap-visual" aria-labelledby="klaxon-roadmap-title">
+  <style>
+    #klaxon-roadmap-visual {
+      color: var(--foreground);
+      font-family: inherit;
+      padding: 20px 8px 10px;
+    }
+
+    #klaxon-roadmap-visual .roadmap-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    #klaxon-roadmap-visual .roadmap-header h1 {
+      margin: 0;
+    }
+
+    #klaxon-roadmap-visual .roadmap-kicker {
+      color: var(--muted-foreground);
+      letter-spacing: 0.08em;
+      margin: 0 0 5px;
+      text-transform: uppercase;
+    }
+
+    #klaxon-roadmap-visual .roadmap-purpose {
+      color: var(--muted-foreground);
+      margin: 0;
+      max-width: 380px;
+      text-align: right;
+    }
+
+    #klaxon-roadmap-visual .roadmap-track {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 22px;
+      position: relative;
+    }
+
+    #klaxon-roadmap-visual .roadmap-track::before {
+      background: var(--border);
+      content: "";
+      height: 2px;
+      left: 4%;
+      position: absolute;
+      right: 4%;
+      top: 25px;
+      z-index: 0;
+    }
+
+    #klaxon-roadmap-visual .roadmap-phase {
+      --phase-color: var(--viz-series-1);
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    #klaxon-roadmap-visual .roadmap-phase:nth-child(2) {
+      --phase-color: var(--viz-series-2);
+    }
+
+    #klaxon-roadmap-visual .roadmap-phase:nth-child(3) {
+      --phase-color: var(--viz-series-3);
+    }
+
+    #klaxon-roadmap-visual .roadmap-phase:nth-child(4) {
+      --phase-color: var(--viz-series-4);
+    }
+
+    #klaxon-roadmap-visual .phase-marker {
+      align-items: center;
+      background: var(--background);
+      border: 2px solid var(--phase-color);
+      border-radius: 50%;
+      color: var(--phase-color);
+      display: flex;
+      height: 48px;
+      justify-content: center;
+      margin-bottom: 16px;
+      width: 48px;
+    }
+
+    #klaxon-roadmap-visual .phase-marker svg {
+      height: 22px;
+      width: 22px;
+    }
+
+    #klaxon-roadmap-visual .phase-status {
+      color: var(--phase-color);
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      margin: 0 0 5px;
+      text-transform: uppercase;
+    }
+
+    #klaxon-roadmap-visual .roadmap-phase h2 {
+      margin: 0 0 4px;
+    }
+
+    #klaxon-roadmap-visual .phase-theme {
+      color: var(--muted-foreground);
+      margin: 0 0 14px;
+      min-height: 2.8em;
+    }
+
+    #klaxon-roadmap-visual .phase-rule {
+      background: var(--phase-color);
+      height: 3px;
+      margin-bottom: 14px;
+      width: 34px;
+    }
+
+    #klaxon-roadmap-visual ul {
+      display: grid;
+      gap: 10px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    #klaxon-roadmap-visual li {
+      color: var(--foreground);
+      padding-left: 16px;
+      position: relative;
+    }
+
+    #klaxon-roadmap-visual li::before {
+      background: var(--phase-color);
+      border-radius: 50%;
+      content: "";
+      height: 6px;
+      left: 0;
+      position: absolute;
+      top: 0.58em;
+      width: 6px;
+    }
+
+    #klaxon-roadmap-visual .roadmap-destination {
+      align-items: center;
+      border-top: 1px solid var(--border);
+      color: var(--muted-foreground);
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 30px;
+      padding-top: 16px;
+      text-align: center;
+    }
+
+    #klaxon-roadmap-visual .roadmap-destination strong {
+      color: var(--foreground);
+      font-weight: 500;
+    }
+
+    @media (max-width: 760px) {
+      #klaxon-roadmap-visual .roadmap-header {
+        align-items: start;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      #klaxon-roadmap-visual .roadmap-purpose {
+        text-align: left;
+      }
+
+      #klaxon-roadmap-visual .roadmap-track {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        row-gap: 34px;
+      }
+
+      #klaxon-roadmap-visual .roadmap-track::before {
+        display: none;
+      }
+
+      #klaxon-roadmap-visual .phase-theme {
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 440px) {
+      #klaxon-roadmap-visual {
+        padding-inline: 2px;
+      }
+
+      #klaxon-roadmap-visual .roadmap-track {
+        grid-template-columns: 1fr;
+      }
+
+      #klaxon-roadmap-visual .roadmap-phase {
+        display: grid;
+        grid-template-columns: 52px 1fr;
+        column-gap: 12px;
+      }
+
+      #klaxon-roadmap-visual .phase-marker {
+        grid-row: 1 / span 5;
+      }
+
+      #klaxon-roadmap-visual .phase-status,
+      #klaxon-roadmap-visual .roadmap-phase h2,
+      #klaxon-roadmap-visual .phase-theme,
+      #klaxon-roadmap-visual .phase-rule,
+      #klaxon-roadmap-visual .roadmap-phase ul {
+        grid-column: 2;
+      }
+
+      #klaxon-roadmap-visual .phase-rule {
+        margin-top: 4px;
+      }
+    }
+  </style>
+
+  <header class="roadmap-header">
+    <div>
+      <p class="roadmap-kicker text-small">Product roadmap · 2026</p>
+      <h1 id="klaxon-roadmap-title">Klaxon</h1>
+    </div>
+    <p class="roadmap-purpose">A personal early-warning platform built to protect sleep, safety, and preparedness in the Philippines.</p>
+  </header>
+
+  <div class="roadmap-track" role="list" aria-label="Klaxon product phases">
+    <article class="roadmap-phase" role="listitem">
+      <div class="phase-marker" aria-hidden="true"><i data-lucide="circle-check-big"></i></div>
+      <p class="phase-status text-small">Complete</p>
+      <h2>Phase 1</h2>
+      <p class="phase-theme">Power-outage foundation</p>
+      <div class="phase-rule" aria-hidden="true"></div>
+      <ul>
+        <li>Pushover on web and iOS</li>
+        <li>DND-proof critical email alerts</li>
+        <li>BOHECO Facebook watcher</li>
+        <li>15-minute adaptive scanning</li>
+        <li>Dauis filtering and deduplication</li>
+        <li>Scheduled and emergency priorities</li>
+      </ul>
+    </article>
+
+    <article class="roadmap-phase" role="listitem">
+      <div class="phase-marker" aria-hidden="true"><i data-lucide="shield-alert"></i></div>
+      <p class="phase-status text-small">Next</p>
+      <h2>Phase 2</h2>
+      <p class="phase-theme">Reliability and disaster alerts</p>
+      <div class="phase-rule" aria-hidden="true"></div>
+      <ul>
+        <li>Watcher health audit</li>
+        <li>Typhoon entry into Philippine PAR</li>
+        <li>Earthquake warnings</li>
+        <li>Tsunami warnings</li>
+      </ul>
+    </article>
+
+    <article class="roadmap-phase" role="listitem">
+      <div class="phase-marker" aria-hidden="true"><i data-lucide="sunrise"></i></div>
+      <p class="phase-status text-small">Planned</p>
+      <h2>Phase 3</h2>
+      <p class="phase-theme">Daily intelligence and more inputs</p>
+      <div class="phase-rule" aria-hidden="true"></div>
+      <ul>
+        <li>7:30 AM Philippine-time outage briefing</li>
+        <li>Read and classify email contents</li>
+        <li>Messages and approved input sources</li>
+      </ul>
+    </article>
+
+    <article class="roadmap-phase" role="listitem">
+      <div class="phase-marker" aria-hidden="true"><i data-lucide="brain-circuit"></i></div>
+      <p class="phase-status text-small">Future</p>
+      <h2>Phase 4</h2>
+      <p class="phase-theme">Smarter operations</p>
+      <div class="phase-rule" aria-hidden="true"></div>
+      <ul>
+        <li>AI-assisted classification</li>
+        <li>Escalation chains</li>
+        <li>Searchable event history</li>
+      </ul>
+    </article>
+  </div>
+
+  <footer class="roadmap-destination">
+    <i data-lucide="radio-tower" aria-hidden="true"></i>
+    <span>From a power-outage watcher to a <strong>unified personal warning platform</strong></span>
+  </footer>
+</section>
