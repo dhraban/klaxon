@@ -35,6 +35,9 @@ jobs:
           restore-keys: |
             klaxon-state-
 
+      - name: Install browser-scrolling component
+        run: npm install --omit=dev --no-audit --no-fund
+
       - name: Check new BOHECO posts
         run: >-
           python3 klaxon_facebook_test.py
