@@ -1,0 +1,59 @@
+name: Klaxon Facebook monitor
+
+on:
+  schedule:
+    # Offset from the top of the hour to reduce GitHub scheduling congestion.
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: klaxon-facebook-monitor
+  cancel-in-progress: false
+
+jobs:
+  check-facebook:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      KLAXON_CHROME_PATH: /usr/bin/google-chrome
+      KLAXON_PLAYWRIGHT_PATH: ${{ github.workspace }}/node_modules/playwright-core
+      PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
+      PUSHOVER_APPLICATION_TOKEN: ${{ secrets.PUSHOVER_APPLICATION_TOKEN }}
+
+    steps:
+      - name: Download Klaxon
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install browser controller
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Restore duplicate history
+        id: restore-state
+        uses: actions/cache/restore@v4
+        with:
+          path: klaxon_state.sqlite3
+          key: klaxon-state-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            klaxon-state-
+
+      - name: Check the five newest BOHECO posts
+        run: >-
+          python3 klaxon_facebook_test.py
+          --post-limit 5
+          --send-pushover
+          --output latest_post.json
+
+      - name: Preserve duplicate history
+        if: ${{ always() && hashFiles('klaxon_state.sqlite3') != '' }}
+        uses: actions/cache/save@v4
+        with:
+          path: klaxon_state.sqlite3
+          key: klaxon-state-${{ github.run_id }}-${{ github.run_attempt }}
