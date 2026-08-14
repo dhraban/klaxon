@@ -106,7 +106,7 @@ The accepted feature set, current work, and later phases are recorded in
 
 PAGASA cyclone checker
 ----------------------
-The daily detector runs at 6:55 AM Bohol time and writes
+The daily detector runs at 4:40 AM Bohol time and writes
 "pagasa_daily_detector.json". It checks the official PAGASA tropical-cyclone
 bulletin and records the storm name, PAR status, issue time, forecast
 positions, and official Bohol wind-signal status. A separate elevated monitor
@@ -130,8 +130,8 @@ does not fetch PAGASA or modify monitor state.
 Morning brief
 -------------
 The `Klaxon morning brief` workflow sends a readable Pushover priority-0
-message at 7:30 AM Bohol time. It runs after the 6:55 AM PAGASA detector and
-the 7:22 AM Facebook sweep, using their cached structured results. The brief
+message at 5:15 AM Bohol time. It runs after the 4:40 AM PAGASA detector and
+the 5:07 AM Facebook sweep, using their cached structured results. The brief
 contains Power today, Cyclone status, and Weather sections in that order.
 Pushover HTML is enabled only to bold the date and those three headings; the
 values remain normal readable text.

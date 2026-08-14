@@ -38,7 +38,7 @@ public in this free configuration.
 
 PAGASA cyclone monitoring
 -------------------------
-The PAGASA detector runs separately every day at 6:55 AM Bohol time (22:55
+The PAGASA detector runs separately every day at 4:40 AM Bohol time (20:40
 UTC). It checks the official tropical-cyclone bulletin and records structured
 JSON state for the later morning brief. When a cyclone is inside PAR, it turns
 on the separate elevated monitor. That monitor wakes on a fixed hourly GitHub
@@ -63,8 +63,8 @@ one clearly labeled priority-0 sample and does not change monitor state.
 
 Morning brief
 -------------
-The `Klaxon morning brief` workflow runs at 7:30 AM Bohol time (23:30 UTC),
-after the daily PAGASA detector at 6:55 AM and the 7:22 AM Facebook sweep. The
+The `Klaxon morning brief` workflow runs at 5:15 AM Bohol time (21:15 UTC),
+after the daily PAGASA detector at 4:40 AM and the 5:07 AM Facebook sweep. The
 source workflows cache their structured results; the brief itself does not
 re-scrape Facebook or PAGASA's cyclone bulletin.
 

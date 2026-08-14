@@ -2,7 +2,7 @@ name: Klaxon PAGASA elevated monitor
 
 on:
   schedule:
-    # GitHub cron is static. The monitor wakes hourly except at 6:55 AM PHT,
+    # GitHub cron is static. The monitor wakes hourly except at 4:40 AM PHT,
     # when the separate daily detector owns the state transition.
     - cron: "55 0-21,23 * * *"
   workflow_dispatch:

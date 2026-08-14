@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and optionally send Klaxon's plain-text morning Pushover brief."""
+"""Build and optionally send Klaxon's morning Pushover brief."""
 
 from __future__ import annotations
 
