@@ -75,7 +75,9 @@ the configured Dauis/Mayacabac area, excludes non-overlapping dates, and
 deduplicates repeated notices with the same outage window. A notice whose date
 cannot be read is retained and reported as date/time uncertain.
 
-It sends one plain-text Pushover priority-0 message titled `Morning brief`.
+It sends one Pushover priority-0 message titled `Morning brief`. HTML is used
+only to bold the date and the three section headings; the values remain plain
+readable text.
 The message begins with the Bohol weekday/date, then contains Power today,
 Cyclone status, and Weather sections. Weather is read from PAGASA's official
 Selected Tourist Areas Bohol forecast, with Celsius retained and Fahrenheit

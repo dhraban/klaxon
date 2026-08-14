@@ -305,12 +305,17 @@ def build_morning_brief(
     state_path: Path | None = None,
 ) -> tuple[str, str]:
     local_today = now.astimezone(ZoneInfo(BOHOL_TIMEZONE)).date()
+    power_text = build_power_section(
+        power_result, state_path=state_path, today=local_today
+    )
+    cyclone_text = build_cyclone_section(cyclone_result)
+    weather_text = str(weather_result.get("summary") or "Forecast unavailable from PAGASA.")
     message = "\n\n".join(
         [
-            format_date_line(now),
-            f"Power today\n{build_power_section(power_result, state_path=state_path, today=local_today)}",
-            f"Cyclone status\n{build_cyclone_section(cyclone_result)}",
-            f"Weather\n{weather_result.get('summary') or 'Forecast unavailable from PAGASA.'}",
+            f"<b>{html.escape(format_date_line(now), quote=False)}</b>",
+            f"<b>Power Today</b>\n{html.escape(power_text, quote=False)}",
+            f"<b>Cyclone Status</b>\n{html.escape(cyclone_text, quote=False)}",
+            f"<b>Weather</b>\n{html.escape(weather_text, quote=False)}",
         ]
     )
     return "Morning brief", message
@@ -320,7 +325,9 @@ def send_morning_brief(
     message: str, send_function=send_notification
 ) -> dict[str, object]:
     """Deliver the brief at the fixed normal Pushover priority."""
-    delivery = send_function(title="Morning brief", message=message, priority=0)
+    delivery = send_function(
+        title="Morning brief", message=message, priority=0, html=True
+    )
     return {**delivery, "priority": 0}
 
 

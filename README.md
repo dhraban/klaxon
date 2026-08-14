@@ -129,10 +129,12 @@ does not fetch PAGASA or modify monitor state.
 
 Morning brief
 -------------
-The `Klaxon morning brief` workflow sends a plain-text Pushover priority-0
+The `Klaxon morning brief` workflow sends a readable Pushover priority-0
 message at 7:30 AM Bohol time. It runs after the 6:55 AM PAGASA detector and
 the 7:22 AM Facebook sweep, using their cached structured results. The brief
 contains Power today, Cyclone status, and Weather sections in that order.
+Pushover HTML is enabled only to bold the date and those three headings; the
+values remain normal readable text.
 
 Recognized scheduled-outage notices are also stored in durable SQLite state.
 The brief evaluates all retained notices against today's Philippine calendar

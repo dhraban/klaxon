@@ -184,11 +184,28 @@ class MorningBriefTests(unittest.TestCase):
             parse_weather_html(WEATHER_FIXTURE),
         )
         self.assertEqual(title, "Morning brief")
-        self.assertTrue(message.startswith("Thursday, August 13, 2026\n\n"))
-        self.assertLess(message.index("Power today"), message.index("Cyclone status"))
-        self.assertLess(message.index("Cyclone status"), message.index("Weather"))
+        self.assertTrue(message.startswith("<b>Thursday, August 13, 2026</b>\n\n"))
+        self.assertLess(message.index("<b>Power Today</b>"), message.index("<b>Cyclone Status</b>"))
+        self.assertLess(message.index("<b>Cyclone Status</b>"), message.index("<b>Weather</b>"))
         self.assertIn("No active tropical cyclone in PAR.", message)
         self.assertIn("Rain showers and thunderstorms; 73–82°F (23–28°C).", message)
+
+    def test_brief_bolds_only_requested_date_and_section_headings(self) -> None:
+        _, message = build_morning_brief(
+            datetime(2026, 8, 13, 0, 0, tzinfo=timezone.utc),
+            {"latest_posts": []},
+            {"active_cyclone": False},
+            {"summary": "Partly cloudy; 75–91°F (24–33°C)."},
+        )
+        self.assertEqual(
+            message.split("\n\n"),
+            [
+                "<b>Thursday, August 13, 2026</b>",
+                "<b>Power Today</b>\nNo scheduled outage affecting your area.",
+                "<b>Cyclone Status</b>\nNo active tropical cyclone in PAR.",
+                "<b>Weather</b>\nPartly cloudy; 75–91°F (24–33°C).",
+            ],
+        )
 
     def test_quiet_power_section_uses_requested_fallback(self) -> None:
         self.assertEqual(
@@ -205,7 +222,10 @@ class MorningBriefTests(unittest.TestCase):
 
         delivery = send_morning_brief("brief body", send_function=fake_send)
         self.assertEqual(delivery["priority"], 0)
-        self.assertEqual(calls, [{"title": "Morning brief", "message": "brief body", "priority": 0}])
+        self.assertEqual(
+            calls,
+            [{"title": "Morning brief", "message": "brief body", "priority": 0, "html": True}],
+        )
 
 
 if __name__ == "__main__":
