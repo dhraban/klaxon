@@ -2,9 +2,11 @@ name: Klaxon morning brief
 
 on:
   schedule:
-    # Run at both possible UTC offsets; the first step gates this to 5:00 AM
-    # America/Chicago, including daylight-saving time.
-    - cron: "0 10,11 * * *"
+    # Two separate UTC triggers cover 5:00 AM America/Chicago across daylight
+    # saving time. The gate below recognizes the correct one without rejecting
+    # a late GitHub start.
+    - cron: "0 10 * * *"
+    - cron: "0 11 * * *"
   workflow_dispatch:
 
 permissions:
@@ -25,8 +27,15 @@ jobs:
     steps:
       - name: Check Central-time schedule
         id: schedule
+        env:
+          SCHEDULE_EXPRESSION: ${{ github.event.schedule }}
         run: |
-          if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$(TZ=America/Chicago date +%H:%M)" = "05:00" ]; then
+          offset="$(TZ=America/Chicago date +%z)"
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif [ "$offset" = "-0500" ] && [ "$SCHEDULE_EXPRESSION" = "0 10 * * *" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif [ "$offset" = "-0600" ] && [ "$SCHEDULE_EXPRESSION" = "0 11 * * *" ]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
