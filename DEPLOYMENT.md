@@ -8,7 +8,9 @@ five-post safety cap bounds the work, and new posts are handled oldest-to-newest
 At 7:15 AM Philippine time, a separate health-check run audits the previous
 day's sweep counter. It expects 96 scheduled sweeps and sends a normal Pushover
 warning when the count is more than 10% below that target. The counter is then
-reset for the next audit period. Manual workflow runs do not affect the counter.
+reset for the next audit period. It also writes a structured
+`watcher_health.json` result to the Actions cache for the next morning brief.
+Manual workflow runs do not affect the counter.
 
 ## One-time GitHub setup
 
@@ -40,7 +42,8 @@ PAGASA cyclone monitoring
 -------------------------
 The PAGASA detector runs separately every day at 4:40 AM Bohol time (20:40
 UTC). It checks the official tropical-cyclone bulletin and records structured
-JSON state for the later morning brief. When a cyclone is inside PAR, it turns
+JSON state for the later morning brief without sending a routine Pushover
+message. When a cyclone is inside PAR, it turns
 on the separate elevated monitor. That monitor wakes on a fixed hourly GitHub
 schedule, but it makes no PAGASA request unless the persisted state says
 elevated monitoring is enabled and the next three-hour or hourly check is due.
@@ -48,10 +51,8 @@ elevated monitoring is enabled and the next three-hour or hourly check is due.
 The daily detector disables elevated monitoring when no active cyclone remains
 inside PAR. GitHub Actions schedules are static, so the hourly monitor job can
 still appear in the Actions history as a no-op; only its PAGASA fetch is
-suppressed outside active monitoring. Each actual detector or monitor fetch
-sends through the existing Pushover secrets. Daily and three-hour checks use
-priority 0; only an hourly check due to an official Bohol wind signal uses
-priority 1.
+suppressed outside active monitoring. Elevated three-hour checks use priority 0;
+only an hourly check due to an official Bohol wind signal uses priority 1.
 
 Alerts also calculate the earliest future PAGASA forecast position within 250
 km of the Dauis, Bohol reference point, using the bulletin's timestamp and
@@ -65,7 +66,8 @@ Morning brief
 -------------
 The `Klaxon morning brief` workflow runs at 5:15 AM Bohol time (21:15 UTC),
 after the daily PAGASA detector at 4:40 AM and the 5:07 AM Facebook sweep. The
-source workflows cache their structured results; the brief itself does not
+source workflows cache their structured results. The brief also restores the
+latest successful watcher-health result from the prior audit cycle; it does not
 re-scrape Facebook or PAGASA's cyclone bulletin.
 
 Each Facebook sweep also upserts recognized scheduled-outage notices into the
@@ -76,10 +78,11 @@ deduplicates repeated notices with the same outage window. A notice whose date
 cannot be read is retained and reported as date/time uncertain.
 
 It sends one Pushover priority-0 message titled `Morning brief`. HTML is used
-only to bold the date and the three section headings; the values remain plain
-readable text.
-The message begins with the Bohol weekday/date, then contains Power today,
-Cyclone status, and Weather sections. Weather is read from PAGASA's official
-Selected Tourist Areas Bohol forecast, with Celsius retained and Fahrenheit
-calculated. Missing weather data is reported as unavailable rather than
-invented.
+only to bold the date and the four section headings; the values remain plain
+readable text. The message begins with the Bohol weekday/date, then contains
+Power today, Cyclone status, Weather, and System health sections. System health
+reports the latest completed watcher audit, including a clear degraded warning
+or an unavailable message when the audit result is missing or invalid. Weather
+is read from PAGASA's official Selected Tourist Areas Bohol forecast, with
+Celsius retained and Fahrenheit calculated. Missing weather data is reported
+as unavailable rather than invented.

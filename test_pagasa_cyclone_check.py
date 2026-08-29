@@ -63,6 +63,38 @@ class PagasaCheckerTests(unittest.TestCase):
         self.assertEqual(result["par_status"], "none_active")
         self.assertEqual(result["cadence"], "daily")
 
+    def test_daily_detector_does_not_send_routine_pushover(self) -> None:
+        from pagasa_cyclone_check import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            directory_path = Path(directory)
+            html_path = directory_path / "bulletin.html"
+            state_path = directory_path / "state.json"
+            output_path = directory_path / "output.json"
+            html_path.write_text(NO_ACTIVE, encoding="utf-8")
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "pagasa_cyclone_check.py",
+                    "--mode",
+                    "daily-detector",
+                    "--html-file",
+                    str(html_path),
+                    "--state-file",
+                    str(state_path),
+                    "--output",
+                    str(output_path),
+                ]
+                with patch("pagasa_cyclone_check.send_pushover_for_result") as send_mock:
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        self.assertEqual(main(), 0)
+                    send_mock.assert_not_called()
+            finally:
+                sys.argv = old_argv
+            result = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertTrue(result["checked"])
+            self.assertFalse(result["pushover"]["sent"])
+
     def test_active_cyclone_in_par_uses_three_hour_cadence(self) -> None:
         text, _ = parse_html(ACTIVE_IN_PAR)
         result = build_result(text, checked_at="2026-08-13T00:00:00Z")

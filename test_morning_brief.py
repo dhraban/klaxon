@@ -12,6 +12,7 @@ from klaxon_facebook_test import (
     record_scheduled_outage,
 )
 from morning_brief import (
+    build_health_section,
     build_morning_brief,
     build_power_section,
     format_weather_line,
@@ -100,6 +101,41 @@ class MorningBriefTests(unittest.TestCase):
         self.assertFalse(weather["available"])
         self.assertEqual(weather["summary"], "Forecast unavailable from PAGASA.")
 
+    def test_health_section_reports_all_expected_checks(self) -> None:
+        self.assertEqual(
+            build_health_section(
+                {
+                    "audit_succeeded": True,
+                    "run_count": 96,
+                    "expected_runs": 96,
+                    "minimum_fraction": 0.90,
+                    "status": "healthy",
+                }
+            ),
+            "All expected Facebook checks completed (96 of 96).",
+        )
+
+    def test_health_section_reports_degraded_audit(self) -> None:
+        self.assertEqual(
+            build_health_section(
+                {
+                    "audit_succeeded": True,
+                    "run_count": 80,
+                    "expected_runs": 96,
+                    "minimum_fraction": 0.90,
+                    "status": "degraded",
+                }
+            ),
+            "Warning: Facebook watcher recorded only 80 of 96 expected checks; "
+            "missed checks may have occurred.",
+        )
+
+    def test_health_section_does_not_claim_health_when_audit_unavailable(self) -> None:
+        self.assertEqual(
+            build_health_section({}),
+            "System health unavailable; the latest watcher audit did not complete successfully.",
+        )
+
     def test_weather_line_retains_celsius_and_adds_fahrenheit(self) -> None:
         self.assertEqual(
             format_weather_line(
@@ -187,8 +223,27 @@ class MorningBriefTests(unittest.TestCase):
         self.assertTrue(message.startswith("<b>Thursday, August 13, 2026</b>\n\n"))
         self.assertLess(message.index("<b>Power Today</b>"), message.index("<b>Cyclone Status</b>"))
         self.assertLess(message.index("<b>Cyclone Status</b>"), message.index("<b>Weather</b>"))
+        self.assertLess(message.index("<b>Weather</b>"), message.index("<b>System health</b>"))
         self.assertIn("No active tropical cyclone in PAR.", message)
         self.assertIn("Rain showers and thunderstorms; 73–82°F (23–28°C).", message)
+
+    def test_brief_includes_completed_health_result_after_weather(self) -> None:
+        _, message = build_morning_brief(
+            datetime(2026, 8, 13, 0, 0, tzinfo=timezone.utc),
+            {"latest_posts": []},
+            {"active_cyclone": False},
+            {"summary": "Partly cloudy; 75–91°F (24–33°C)."},
+            health_result={
+                "audit_succeeded": True,
+                "run_count": 96,
+                "expected_runs": 96,
+                "minimum_fraction": 0.90,
+            },
+        )
+        self.assertIn(
+            "<b>System health</b>\nAll expected Facebook checks completed (96 of 96).",
+            message,
+        )
 
     def test_brief_bolds_only_requested_date_and_section_headings(self) -> None:
         _, message = build_morning_brief(
@@ -204,6 +259,7 @@ class MorningBriefTests(unittest.TestCase):
                 "<b>Power Today</b>\nNo scheduled outage affecting your area.",
                 "<b>Cyclone Status</b>\nNo active tropical cyclone in PAR.",
                 "<b>Weather</b>\nPartly cloudy; 75–91°F (24–33°C).",
+                "<b>System health</b>\nSystem health unavailable; the latest watcher audit did not complete successfully.",
             ],
         )
 

@@ -291,6 +291,43 @@ def build_cyclone_section(cyclone_result: dict[str, object]) -> str:
     return str(cyclone_result.get("summary") or "Cyclone status unavailable.")
 
 
+def build_health_section(health_result: dict[str, object]) -> str:
+    """Summarize the latest completed watcher audit without guessing health."""
+    if health_result.get("audit_succeeded") is not True:
+        return (
+            "System health unavailable; the latest watcher audit did not "
+            "complete successfully."
+        )
+
+    run_count = health_result.get("run_count")
+    expected_runs = health_result.get("expected_runs")
+    minimum_fraction = health_result.get("minimum_fraction")
+    if (
+        not isinstance(run_count, int)
+        or isinstance(run_count, bool)
+        or not isinstance(expected_runs, int)
+        or isinstance(expected_runs, bool)
+        or expected_runs <= 0
+        or not isinstance(minimum_fraction, (int, float))
+        or isinstance(minimum_fraction, bool)
+        or not 0 < minimum_fraction <= 1
+    ):
+        return "System health unavailable; the latest watcher audit was incomplete."
+
+    minimum_count = expected_runs * float(minimum_fraction)
+    if run_count >= expected_runs:
+        return f"All expected Facebook checks completed ({run_count} of {expected_runs})."
+    if run_count >= minimum_count:
+        return (
+            f"Facebook watcher recorded {run_count} of {expected_runs} expected "
+            "checks; within the 10% tolerance."
+        )
+    return (
+        f"Warning: Facebook watcher recorded only {run_count} of {expected_runs} "
+        "expected checks; missed checks may have occurred."
+    )
+
+
 def format_date_line(now: datetime) -> str:
     local = now.astimezone(ZoneInfo(BOHOL_TIMEZONE))
     return local.strftime("%A, %B %d, %Y").replace(" 0", " ")
@@ -303,6 +340,7 @@ def build_morning_brief(
     weather_result: dict[str, object],
     *,
     state_path: Path | None = None,
+    health_result: dict[str, object] | None = None,
 ) -> tuple[str, str]:
     local_today = now.astimezone(ZoneInfo(BOHOL_TIMEZONE)).date()
     power_text = build_power_section(
@@ -310,12 +348,14 @@ def build_morning_brief(
     )
     cyclone_text = build_cyclone_section(cyclone_result)
     weather_text = str(weather_result.get("summary") or "Forecast unavailable from PAGASA.")
+    health_text = build_health_section(health_result or {})
     message = "\n\n".join(
         [
             f"<b>{html.escape(format_date_line(now), quote=False)}</b>",
             f"<b>Power Today</b>\n{html.escape(power_text, quote=False)}",
             f"<b>Cyclone Status</b>\n{html.escape(cyclone_text, quote=False)}",
             f"<b>Weather</b>\n{html.escape(weather_text, quote=False)}",
+            f"<b>System health</b>\n{html.escape(health_text, quote=False)}",
         ]
     )
     return "Morning brief", message
@@ -335,6 +375,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--power-file", type=Path, default=Path("latest_post.json"))
     parser.add_argument("--cyclone-file", type=Path, default=Path("pagasa_daily_detector.json"))
+    parser.add_argument("--health-file", type=Path, default=Path("watcher_health.json"))
     parser.add_argument("--state-file", type=Path, default=Path("klaxon_state.sqlite3"))
     parser.add_argument("--weather-html", type=Path, help="Use saved PAGASA HTML instead of fetching it.")
     parser.add_argument("--output", type=Path, default=Path("morning_brief.json"))
@@ -354,13 +395,19 @@ def main() -> int:
         )
         power_result = read_json(args.power_file)
         cyclone_result = read_json(args.cyclone_file)
+        health_result = read_json(args.health_file)
         weather_result = (
             parse_weather_html(args.weather_html.read_text(encoding="utf-8"))
             if args.weather_html
             else fetch_weather()
         )
         title, message = build_morning_brief(
-            now, power_result, cyclone_result, weather_result, state_path=args.state_file
+            now,
+            power_result,
+            cyclone_result,
+            weather_result,
+            state_path=args.state_file,
+            health_result=health_result,
         )
         if args.send_pushover:
             delivery = send_morning_brief(message)

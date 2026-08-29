@@ -607,7 +607,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--send-pushover",
         action="store_true",
-        help="Send one Pushover update after each actual PAGASA fetch.",
+        help=(
+            "Send one Pushover update after each actual PAGASA fetch; omit for "
+            "the routine daily detector."
+        ),
     )
     parser.add_argument(
         "--test-pushover",

@@ -33,23 +33,25 @@ Once per day at 7:15 AM Philippine time, compare the number of scheduled
 Facebook sweeps with the expected number. Send a normal warning if the actual
 count is more than 10% below the expected count, then reset the counter.
 
-The health check is kept separate so it can later feed into the overall daily
-brief.
+The health check is kept separate and its latest successful result now feeds
+the overall daily brief. It still sends a separate priority 0 warning only
+when the count is below the configured tolerance.
 
 ### Natural-disaster warnings
 
 - Hurricane/typhoon warning when a storm enters the Philippine Area of
   Responsibility (PAR) — detector and separate elevated monitor implemented;
-  morning-summary notification remains a later integration
+  routine daily detector push is consolidated into the morning brief; urgent
+  elevated alerts remain separate
 - Earthquake warning
 
 ## Phase 3
 
 - Read and classify email contents
 - Add Messages/iMessage or other approved input sources
-- Send a daily 7:30 AM Philippine-time Pushover summary of upcoming scheduled
-  power outages — morning brief implemented with PAGASA Bohol weather and
-  cyclone-status sections
+- Send a daily 5:15 AM Philippine-time Pushover summary of upcoming scheduled
+  power outages — morning brief implemented with PAGASA Bohol weather,
+  cyclone-status, and system-health sections
 
 ## Phase 4
 

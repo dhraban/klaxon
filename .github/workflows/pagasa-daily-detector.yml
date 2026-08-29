@@ -13,9 +13,6 @@ jobs:
   detect-cyclone:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    env:
-      PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
-      PUSHOVER_APPLICATION_TOKEN: ${{ secrets.PUSHOVER_APPLICATION_TOKEN }}
     steps:
       - name: Download Klaxon
         uses: actions/checkout@v4
@@ -31,13 +28,12 @@ jobs:
       - name: Install PDF reader
         run: python3 -m pip install --disable-pip-version-check --no-warn-script-location -r requirements.txt
 
-      - name: Run daily PAGASA detector
+      - name: Run daily PAGASA detector without routine push
         run: >-
           python3 pagasa_cyclone_check.py
           --mode daily-detector
           --state-file pagasa_state.json
           --output pagasa_daily_detector.json
-          --send-pushover
           --pretty
 
       - name: Preserve daily cyclone result for morning brief

@@ -46,11 +46,20 @@ jobs:
           restore-keys: |
             pagasa-daily-result-
 
+      - name: Restore latest watcher health result
+        uses: actions/cache/restore@v4
+        with:
+          path: watcher_health.json
+          key: morning-health-result-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            watcher-health-
+
       - name: Send morning brief
         run: >-
           python3 morning_brief.py
           --power-file latest_post.json
           --cyclone-file pagasa_daily_detector.json
+          --health-file watcher_health.json
           --state-file klaxon_state.sqlite3
           --output morning_brief.json
           --send-pushover

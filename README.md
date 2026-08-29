@@ -109,13 +109,15 @@ PAGASA cyclone checker
 The daily detector runs at 4:40 AM Bohol time and writes
 "pagasa_daily_detector.json". It checks the official PAGASA tropical-cyclone
 bulletin and records the storm name, PAR status, issue time, forecast
-positions, and official Bohol wind-signal status. A separate elevated monitor
+positions, and official Bohol wind-signal status. It does not send a routine
+Pushover message. A separate elevated monitor
 uses the persisted state for three-hour checks while a cyclone is in PAR and
 hourly checks when Bohol is under an official wind signal. Its GitHub schedule
 is fixed hourly, but it does not fetch PAGASA while elevated monitoring is off
-or while its next check is not due. Each actual check sends a Pushover update:
-priority 0 for the daily and three-hour checks, and priority 1 only for an
-hourly check caused by an official Bohol wind signal.
+or while its next check is not due. Elevated three-hour checks send priority 0
+updates, and hourly checks caused by an official Bohol wind signal send priority
+1. The daily detector writes its result for the morning brief without sending
+its own routine update.
 
 When PAGASA provides timestamped forecast positions, the alert also reports
 the earliest forecast center within 250 km of the Dauis, Bohol reference point
@@ -129,12 +131,14 @@ does not fetch PAGASA or modify monitor state.
 
 Morning brief
 -------------
-The `Klaxon morning brief` workflow sends a readable Pushover priority-0
+The `Klaxon morning brief` workflow sends one readable Pushover priority-0
 message at 5:15 AM Bohol time. It runs after the 4:40 AM PAGASA detector and
-the 5:07 AM Facebook sweep, using their cached structured results. The brief
-contains Power today, Cyclone status, and Weather sections in that order.
-Pushover HTML is enabled only to bold the date and those three headings; the
-values remain normal readable text.
+the 5:07 AM Facebook sweep, using their cached structured results and the
+latest successfully completed watcher health audit. The brief contains Power
+today, Cyclone status, Weather, and System health sections in that order.
+Pushover HTML is enabled only to bold the date and those four headings; the
+values remain normal readable text. If no valid health-audit result is
+available, the brief says so rather than claiming the system is healthy.
 
 Recognized scheduled-outage notices are also stored in durable SQLite state.
 The brief evaluates all retained notices against today's Philippine calendar
