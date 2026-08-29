@@ -30,19 +30,20 @@ There are no partially complete features being tracked.
 ### Watcher run-count warning
 
 Once per day at 7:15 AM Philippine time, compare the number of scheduled
-Facebook sweeps with the expected number. Send a normal warning if the actual
-count is more than 10% below the expected count, then reset the counter.
+Facebook sweeps with the expected number. Record a degraded result if the
+actual count is more than 10% below the expected count, then reset the counter.
 
-The health check is kept separate and its latest successful result now feeds
-the overall daily brief. It still sends a separate priority 0 warning only
-when the count is below the configured tolerance.
+The health check is kept separate and its latest result now feeds the overall
+daily brief. A degraded result is reported in the brief; it does not generate a
+separate routine Pushover warning.
 
 ### Natural-disaster warnings
 
 - Hurricane/typhoon warning when a storm enters the Philippine Area of
   Responsibility (PAR) — detector and separate elevated monitor implemented;
-  routine daily detector push is consolidated into the morning brief; urgent
-  elevated alerts remain separate
+  routine daily detector push is consolidated into the morning brief; quiet
+  days produce no standalone PAGASA push, and urgent elevated alerts remain
+  separate
 - Earthquake warning
 
 ## Phase 3

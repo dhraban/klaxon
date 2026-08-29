@@ -526,6 +526,12 @@ def send_pushover_for_result(
     send_function=send_notification,
 ) -> dict[str, object]:
     priority = notification_priority(mode, prior_state, result)
+    if result.get("active_cyclone") is not True or result.get("par_status") != "inside":
+        return {
+            "sent": False,
+            "priority": priority,
+            "reason": "No standalone PAGASA notification: no active cyclone in PAR.",
+        }
     title, message = build_pushover_message(result)
     delivery = send_function(title=title, message=message, priority=priority)
     return {**delivery, "priority": priority}
@@ -688,12 +694,27 @@ def main() -> int:
             else None
         )
         result["monitor_mode"] = args.mode
-        if args.send_pushover:
+        should_send_event_alert = (
+            args.send_pushover
+            and args.mode == "monitor"
+            and result.get("active_cyclone") is True
+            and result.get("par_status") == "inside"
+        )
+        if should_send_event_alert:
             result["pushover"] = send_pushover_for_result(
                 result,
                 mode=args.mode,
                 prior_state=state,
             )
+        elif args.send_pushover:
+            result["pushover"] = {
+                "sent": False,
+                "priority": notification_priority(args.mode, state, result),
+                "reason": (
+                    "No standalone PAGASA notification: routine checks and results "
+                    "outside an active cyclone in PAR are state-only."
+                ),
+            }
         else:
             result["pushover"] = {
                 "sent": False,

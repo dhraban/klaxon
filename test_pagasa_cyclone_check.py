@@ -84,6 +84,7 @@ class PagasaCheckerTests(unittest.TestCase):
                     str(state_path),
                     "--output",
                     str(output_path),
+                    "--send-pushover",
                 ]
                 with patch("pagasa_cyclone_check.send_pushover_for_result") as send_mock:
                     with contextlib.redirect_stdout(io.StringIO()):
@@ -94,6 +95,53 @@ class PagasaCheckerTests(unittest.TestCase):
             result = json.loads(output_path.read_text(encoding="utf-8"))
             self.assertTrue(result["checked"])
             self.assertFalse(result["pushover"]["sent"])
+
+    def test_quiet_monitor_does_not_send_standalone_pushover(self) -> None:
+        from pagasa_cyclone_check import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            directory_path = Path(directory)
+            html_path = directory_path / "bulletin.html"
+            state_path = directory_path / "state.json"
+            output_path = directory_path / "output.json"
+            html_path.write_text(NO_ACTIVE, encoding="utf-8")
+            state_path.write_text(
+                json.dumps(
+                    {
+                        "monitoring_enabled": True,
+                        "active_cyclone": True,
+                        "storm_name": "TESTING",
+                        "par_status": "inside",
+                        "cadence": "every_3_hours",
+                        "next_monitor_check_at_utc": "2000-01-01T00:00:00Z",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    "pagasa_cyclone_check.py",
+                    "--mode",
+                    "monitor",
+                    "--html-file",
+                    str(html_path),
+                    "--state-file",
+                    str(state_path),
+                    "--output",
+                    str(output_path),
+                    "--send-pushover",
+                ]
+                with patch("pagasa_cyclone_check.send_pushover_for_result") as send_mock:
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        self.assertEqual(main(), 0)
+                    send_mock.assert_not_called()
+            finally:
+                sys.argv = old_argv
+            result = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertTrue(result["checked"])
+            self.assertFalse(result["pushover"]["sent"])
+            self.assertIn("outside an active cyclone in PAR", result["pushover"]["reason"])
 
     def test_active_cyclone_in_par_uses_three_hour_cadence(self) -> None:
         text, _ = parse_html(ACTIVE_IN_PAR)
@@ -215,6 +263,26 @@ class PagasaCheckerTests(unittest.TestCase):
         self.assertEqual(calls[0]["priority"], 0)
         self.assertTrue(calls[0]["title"].startswith("TEST ONLY"))
         self.assertIn("not a real current threat", calls[0]["message"])
+
+    def test_standalone_sender_refuses_quiet_or_out_of_par_results(self) -> None:
+        calls = []
+
+        def fake_send(**kwargs):
+            calls.append(kwargs)
+            return {"sent": True}
+
+        for result in (
+            {"active_cyclone": False, "par_status": "none_active"},
+            {"active_cyclone": True, "par_status": "outside"},
+        ):
+            delivery = send_pushover_for_result(
+                result,
+                mode="monitor",
+                prior_state={},
+                send_function=fake_send,
+            )
+            self.assertFalse(delivery["sent"])
+        self.assertEqual(calls, [])
 
     def test_forecast_proximity_finds_earliest_point_within_threshold(self) -> None:
         proximity = calculate_forecast_proximity(

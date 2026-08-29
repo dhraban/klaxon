@@ -117,7 +117,9 @@ is fixed hourly, but it does not fetch PAGASA while elevated monitoring is off
 or while its next check is not due. Elevated three-hour checks send priority 0
 updates, and hourly checks caused by an official Bohol wind signal send priority
 1. The daily detector writes its result for the morning brief without sending
-its own routine update.
+its own routine update. Standalone PAGASA pushes are suppressed unless an actual
+monitor check reports an active cyclone inside PAR; quiet-day and out-of-PAR
+results are state-only.
 
 When PAGASA provides timestamped forecast positions, the alert also reports
 the earliest forecast center within 250 km of the Dauis, Bohol reference point
@@ -138,7 +140,9 @@ latest successfully completed watcher health audit. The brief contains Power
 today, Cyclone status, Weather, and System health sections in that order.
 Pushover HTML is enabled only to bold the date and those four headings; the
 values remain normal readable text. If no valid health-audit result is
-available, the brief says so rather than claiming the system is healthy.
+available, the brief says so rather than claiming the system is healthy. The
+Cyclone status section remains in the daily brief even when PAGASA reports no
+active cyclone in PAR; no separate health-warning push is sent either.
 
 Recognized scheduled-outage notices are also stored in durable SQLite state.
 The brief evaluates all retained notices against today's Philippine calendar

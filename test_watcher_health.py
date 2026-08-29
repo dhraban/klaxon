@@ -5,7 +5,6 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
 
 from klaxon_facebook_test import record_scheduled_watcher_run, read_watcher_run_counter
 from watcher_health import main
@@ -32,9 +31,7 @@ class WatcherHealthTests(unittest.TestCase):
                     "--output",
                     str(output_path),
                 ]
-                with patch("watcher_health.send_notification") as send_mock:
-                    result_code = main()
-                    send_mock.assert_not_called()
+                result_code = main()
             finally:
                 sys.argv = old_argv
             result = json.loads(output_path.read_text(encoding="utf-8"))

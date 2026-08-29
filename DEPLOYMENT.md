@@ -6,9 +6,10 @@ continues through older posts until it reaches an already processed ID. A
 five-post safety cap bounds the work, and new posts are handled oldest-to-newest.
 
 At 7:15 AM Philippine time, a separate health-check run audits the previous
-day's sweep counter. It expects 96 scheduled sweeps and sends a normal Pushover
-warning when the count is more than 10% below that target. The counter is then
-reset for the next audit period. It also writes a structured
+day's sweep counter. It expects 96 scheduled sweeps and records a degraded
+result when the count is more than 10% below that target. It does not send a
+separate health-warning Pushover message; the counter is then reset for the next
+audit period. It also writes a structured
 `watcher_health.json` result to the Actions cache for the next morning brief.
 Manual workflow runs do not affect the counter.
 
@@ -51,8 +52,10 @@ elevated monitoring is enabled and the next three-hour or hourly check is due.
 The daily detector disables elevated monitoring when no active cyclone remains
 inside PAR. GitHub Actions schedules are static, so the hourly monitor job can
 still appear in the Actions history as a no-op; only its PAGASA fetch is
-suppressed outside active monitoring. Elevated three-hour checks use priority 0;
-only an hourly check due to an official Bohol wind signal uses priority 1.
+suppressed outside active monitoring. Standalone PAGASA pushes are sent only for
+actual monitor checks that still report an active cyclone inside PAR. Elevated
+three-hour checks use priority 0; only an hourly check due to an official Bohol
+wind signal uses priority 1. Quiet-day and out-of-PAR results are state-only.
 
 Alerts also calculate the earliest future PAGASA forecast position within 250
 km of the Dauis, Bohol reference point, using the bulletin's timestamp and
@@ -82,7 +85,9 @@ only to bold the date and the four section headings; the values remain plain
 readable text. The message begins with the Bohol weekday/date, then contains
 Power today, Cyclone status, Weather, and System health sections. System health
 reports the latest completed watcher audit, including a clear degraded warning
-or an unavailable message when the audit result is missing or invalid. Weather
+or an unavailable message when the audit result is missing or invalid. No
+separate health-warning push is sent. Cyclone Status remains present every day,
+including the quiet result from PAGASA. Weather
 is read from PAGASA's official Selected Tourist Areas Bohol forecast, with
 Celsius retained and Fahrenheit calculated. Missing weather data is reported
 as unavailable rather than invented.

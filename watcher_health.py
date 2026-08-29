@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Count scheduled sweeps and send a daily health warning when needed."""
+"""Count scheduled sweeps and persist a daily health result."""
 
 from __future__ import annotations
 
@@ -12,11 +12,9 @@ import sys
 from klaxon_facebook_test import (
     DEFAULT_STATE_PATH,
     KlaxonTestError,
-    PushoverError,
     read_watcher_run_counter,
     record_scheduled_watcher_run,
     reset_watcher_run_counter,
-    send_notification,
 )
 
 
@@ -57,11 +55,6 @@ def parse_args() -> argparse.Namespace:
         default=0.90,
         help="Minimum acceptable fraction of expected runs (default: 0.90).",
     )
-    parser.add_argument(
-        "--send-pushover",
-        action="store_true",
-        help="Send a priority 0 warning when the count is below the threshold.",
-    )
     return parser.parse_args()
 
 
@@ -89,23 +82,10 @@ def main() -> int:
             f"minimum acceptable {minimum_count:.1f}."
         )
         if warning_needed:
-            last_run = summary["last_run_at_utc"] or "none recorded"
-            message = (
-                "Klaxon watcher health warning\n"
-                f"Recorded runs: {run_count}\n"
-                f"Expected runs: {args.expected_runs}\n"
-                f"Last recorded sweep: {last_run}\n\n"
-                "The scheduled Facebook watcher may have missed one or more runs."
+            print(
+                "Watcher health is degraded; the result will be reported in the "
+                "morning brief without a separate Pushover notification."
             )
-            if args.send_pushover:
-                send_notification(
-                    title="Klaxon watcher health warning",
-                    message=message,
-                    priority=0,
-                )
-                print("Priority 0 health warning sent through Pushover.")
-            else:
-                print("Health warning required; Pushover sending was not requested.")
         else:
             print("Watcher run count is within the acceptable range.")
 
@@ -134,7 +114,7 @@ def main() -> int:
         )
         print(f"Saved structured health result to: {args.output}")
         return 0
-    except (KlaxonTestError, PushoverError, OSError, ValueError) as error:
+    except (KlaxonTestError, OSError, ValueError) as error:
         print(f"Klaxon watcher health check stopped: {error}", file=sys.stderr)
         return 1
 
