@@ -95,9 +95,10 @@ Automated deployment
 --------------------
 The project is prepared for a free GitHub Actions deployment. Every 15 minutes,
 it adaptively checks up to 25 BOHECO posts and stops when it reaches an ID in
-the duplicate history. New posts are processed oldest-to-newest, and duplicate
-state is kept in the Actions cache. See "DEPLOYMENT.md" for setup and free-tier
-tradeoffs.
+the duplicate history. New posts are processed oldest-to-newest. Actions cache
+keeps the high-frequency health counter, while the public `klaxon-state` branch
+is the durable copy of non-secret duplicate and schedule state. See
+"DEPLOYMENT.md" for setup and free-tier tradeoffs.
 
 Project roadmap
 ---------------

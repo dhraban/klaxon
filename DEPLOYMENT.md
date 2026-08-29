@@ -24,8 +24,19 @@ Manual workflow runs do not affect the counter.
 5. Open **Actions → Klaxon Facebook monitor → Run workflow** for the first test.
 
 The workflow carries the seed post IDs already processed during local testing.
-After the first run, its SQLite history is restored and saved using GitHub's
-Actions cache. The database continues to retain only the newest 20 IDs.
+The database continues to retain only the newest 20 IDs.
+
+## Durable state branch
+
+The public `klaxon-state` branch is the durable, no-cost source for non-secret
+operational state. It holds canonical JSON for processed Facebook post IDs and
+retained scheduled outages, plus the latest PAGASA and watcher-health results.
+It never contains Pushover credentials.
+
+The workflows restore alert and schedule state from this branch before use and
+commit it back only when meaningful data changes. Actions cache remains a fast
+fallback and holds the high-frequency watcher-run counter, avoiding a Git
+commit every 15 minutes.
 
 ## Cost and reliability
 

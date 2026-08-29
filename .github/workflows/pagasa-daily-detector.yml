@@ -8,7 +8,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: klaxon-state
+  cancel-in-progress: false
 
 jobs:
   detect-cyclone:
@@ -37,6 +41,19 @@ jobs:
           restore-keys: |
             pagasa-state-
 
+      - name: Download durable state branch
+        if: steps.schedule.outputs.run == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: klaxon-state
+          path: .klaxon-state
+          fetch-depth: 1
+
+      - name: Restore durable PAGASA state
+        if: steps.schedule.outputs.run == 'true'
+        run: |
+          if [ -f .klaxon-state/pagasa_state.json ]; then cp .klaxon-state/pagasa_state.json pagasa_state.json; fi
+
       - name: Install PDF reader
         if: steps.schedule.outputs.run == 'true'
         run: python3 -m pip install --disable-pip-version-check --no-warn-script-location -r requirements.txt
@@ -63,3 +80,21 @@ jobs:
         with:
           path: pagasa_state.json
           key: pagasa-state-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Preserve durable PAGASA results
+        if: ${{ steps.schedule.outputs.run == 'true' && always() && hashFiles('pagasa_state.json', 'pagasa_daily_detector.json') != '' }}
+        run: |
+          cp pagasa_state.json .klaxon-state/pagasa_state.json
+          cp pagasa_daily_detector.json .klaxon-state/pagasa_daily_detector.json
+
+      - name: Commit durable PAGASA results
+        if: ${{ steps.schedule.outputs.run == 'true' && always() && hashFiles('.klaxon-state/pagasa_state.json', '.klaxon-state/pagasa_daily_detector.json') != '' }}
+        run: |
+          cd .klaxon-state
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pagasa_state.json pagasa_daily_detector.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update Klaxon PAGASA state"
+            git push origin HEAD:klaxon-state
+          fi

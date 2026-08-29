@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: klaxon-state
+  cancel-in-progress: false
+
 jobs:
   send-morning-brief:
     runs-on: ubuntu-24.04
@@ -67,6 +71,21 @@ jobs:
           key: morning-health-result-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
             watcher-health-
+
+      - name: Download durable state branch
+        if: steps.schedule.outputs.run == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: klaxon-state
+          path: .klaxon-state
+          fetch-depth: 1
+
+      - name: Restore durable brief inputs
+        if: steps.schedule.outputs.run == 'true'
+        run: |
+          python3 durable_state.py import --state-file klaxon_state.sqlite3 --json-file .klaxon-state/facebook_state.json
+          if [ -f .klaxon-state/pagasa_daily_detector.json ]; then cp .klaxon-state/pagasa_daily_detector.json pagasa_daily_detector.json; fi
+          if [ -f .klaxon-state/watcher_health.json ]; then cp .klaxon-state/watcher_health.json watcher_health.json; fi
 
       - name: Send morning brief
         if: steps.schedule.outputs.run == 'true'

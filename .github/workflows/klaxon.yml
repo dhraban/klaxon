@@ -19,10 +19,10 @@ on:
         default: facebook
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: klaxon-facebook-monitor
+  group: klaxon-state
   cancel-in-progress: false
 
 jobs:
@@ -50,6 +50,19 @@ jobs:
           restore-keys: |
             klaxon-state-
 
+      - name: Download durable state branch
+        uses: actions/checkout@v4
+        with:
+          ref: klaxon-state
+          path: .klaxon-state
+          fetch-depth: 1
+
+      - name: Restore durable alert and schedule state
+        run: >-
+          python3 durable_state.py import
+          --state-file klaxon_state.sqlite3
+          --json-file .klaxon-state/facebook_state.json
+
       - name: Count scheduled watcher run
         if: ${{ github.event_name == 'schedule' }}
         run: python3 watcher_health.py --state-file klaxon_state.sqlite3 --increment
@@ -70,6 +83,25 @@ jobs:
         with:
           path: latest_post.json
           key: klaxon-power-result-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Export durable alert and schedule state
+        if: ${{ always() && hashFiles('klaxon_state.sqlite3') != '' }}
+        run: >-
+          python3 durable_state.py export
+          --state-file klaxon_state.sqlite3
+          --json-file .klaxon-state/facebook_state.json
+
+      - name: Commit durable alert and schedule state
+        if: ${{ always() && hashFiles('.klaxon-state/facebook_state.json') != '' }}
+        run: |
+          cd .klaxon-state
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add facebook_state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update Klaxon Facebook state"
+            git push origin HEAD:klaxon-state
+          fi
 
       - name: Preserve duplicate history
         if: ${{ always() && hashFiles('klaxon_state.sqlite3') != '' }}
@@ -108,6 +140,21 @@ jobs:
           restore-keys: |
             klaxon-state-
 
+      - name: Download durable state branch
+        if: steps.schedule.outputs.run == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: klaxon-state
+          path: .klaxon-state
+          fetch-depth: 1
+
+      - name: Restore durable alert and schedule state
+        if: steps.schedule.outputs.run == 'true'
+        run: >-
+          python3 durable_state.py import
+          --state-file klaxon_state.sqlite3
+          --json-file .klaxon-state/facebook_state.json
+
       - name: Audit and reset watcher counter
         if: steps.schedule.outputs.run == 'true'
         run: >-
@@ -131,3 +178,19 @@ jobs:
         with:
           path: watcher_health.json
           key: watcher-health-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Preserve durable watcher health result
+        if: ${{ steps.schedule.outputs.run == 'true' && always() && hashFiles('watcher_health.json') != '' }}
+        run: cp watcher_health.json .klaxon-state/watcher_health.json
+
+      - name: Commit durable watcher health result
+        if: ${{ steps.schedule.outputs.run == 'true' && always() && hashFiles('.klaxon-state/watcher_health.json') != '' }}
+        run: |
+          cd .klaxon-state
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add watcher_health.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update Klaxon watcher health"
+            git push origin HEAD:klaxon-state
+          fi
