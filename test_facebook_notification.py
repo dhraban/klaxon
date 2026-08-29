@@ -136,6 +136,28 @@ class FacebookNotificationTests(unittest.TestCase):
         self.assertEqual(payload["html"], ["1"])
         self.assertEqual(payload["priority"], ["0"])
 
+    def test_pushover_client_allows_silent_priority(self) -> None:
+        class FakeResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self):
+                return b'{"status": 1, "request": "silent-test"}'
+
+        with patch(
+            "pushover_client.read_credentials",
+            return_value={"user_key": "u" * 30, "application_token": "t" * 30},
+        ), patch("pushover_client.urlopen", return_value=FakeResponse()) as open_url:
+            result = send_notification(
+                title="Morning brief", message="brief body", priority=-1
+            )
+        payload = parse_qs(open_url.call_args.args[0].data.decode("utf-8"))
+        self.assertTrue(result["sent"])
+        self.assertEqual(payload["priority"], ["-1"])
+
 
 if __name__ == "__main__":
     unittest.main()

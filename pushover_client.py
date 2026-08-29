@@ -58,8 +58,8 @@ def send_notification(
     url: str | None = None,
     html: bool = False,
 ) -> dict[str, object]:
-    if priority not in (0, 1):
-        raise PushoverError("Klaxon currently permits only Pushover priority 0 or 1.")
+    if priority not in (-1, 0, 1):
+        raise PushoverError("Klaxon currently permits Pushover priorities -1, 0, or 1.")
 
     credentials = read_credentials()
     parameters = {

@@ -5,7 +5,7 @@ each hour. Each run checks the newest BOHECO post first. If that ID is new, it
 continues through older posts until it reaches an already processed ID. A
 25-post safety cap bounds the work, and new posts are handled oldest-to-newest.
 
-At 6:15 AM America/Chicago time, a separate health-check run
+At 4:35 AM America/Chicago time, a separate health-check run
 audits the previous day's sweep counter. It expects 96 scheduled sweeps and records a degraded
 result when the count is more than 10% below that target. It does not send a
 separate health-warning Pushover message; the counter is then reset for the next
@@ -56,7 +56,7 @@ public in this free configuration.
 
 PAGASA cyclone monitoring
 -------------------------
-The PAGASA detector runs separately every day at 5:55 AM America/Chicago time.
+The PAGASA detector runs separately every day at 4:25 AM America/Chicago time.
 It checks the official tropical-cyclone bulletin and records
 structured
 JSON state for the later morning brief without sending a routine Pushover
@@ -83,10 +83,11 @@ one clearly labeled priority-0 sample and does not change monitor state.
 
 Morning brief
 -------------
-The `Klaxon morning brief` workflow runs at 5:00 AM America/Chicago time,
-after the daily PAGASA detector at 5:55 AM, the 6:15 AM health
-audit, and the 6:22 AM Facebook sweep. The source workflows cache their
-structured results. The brief also restores the latest successful watcher-health
+The `Klaxon morning brief` workflow runs at 5:00 AM America/Chicago time. It
+uses the latest persisted results from the daily PAGASA detector (scheduled for
+4:25 AM), health audit (scheduled for 4:35 AM), and regular Facebook sweep
+(normally 4:52 AM). The source workflows cache their structured results. The
+brief also restores the latest successful watcher-health
 result; it does not re-scrape Facebook or PAGASA's cyclone bulletin.
 
 Each Facebook sweep also upserts recognized scheduled-outage notices into the

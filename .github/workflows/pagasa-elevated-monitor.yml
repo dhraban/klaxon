@@ -2,8 +2,8 @@ name: Klaxon PAGASA elevated monitor
 
 on:
   schedule:
-    # Retain the approved 22:55 UTC quiet window. A gate below also yields at
-    # 5:55 AM America/Chicago, when the daily detector owns the state transition.
+    # Retain the approved 22:55 UTC quiet window. The daily detector now runs
+    # separately at 4:25 AM America/Chicago, so there is no schedule collision.
     - cron: "55 0-21,23 * * *"
   workflow_dispatch:
 
@@ -22,14 +22,9 @@ jobs:
       PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
       PUSHOVER_APPLICATION_TOKEN: ${{ secrets.PUSHOVER_APPLICATION_TOKEN }}
     steps:
-      - name: Yield to the Central-time daily detector
+      - name: Enable elevated monitor
         id: schedule
-        run: |
-          if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$(TZ=America/Chicago date +%H:%M)" != "05:55" ]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "run=false" >> "$GITHUB_OUTPUT"
-          fi
+        run: echo "run=true" >> "$GITHUB_OUTPUT"
 
       - name: Download Klaxon
         if: steps.schedule.outputs.run == 'true'

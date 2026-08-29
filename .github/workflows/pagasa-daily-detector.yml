@@ -2,9 +2,10 @@ name: Klaxon PAGASA daily detector
 
 on:
   schedule:
-    # Run at both possible UTC offsets; the first step gates this to 5:55 AM
-    # America/Chicago, including daylight-saving time.
-    - cron: "55 10,11 * * *"
+    # Two separate UTC triggers cover 4:25 AM America/Chicago across daylight
+    # saving time. The gate recognizes a delayed correct trigger.
+    - cron: "25 9 * * *"
+    - cron: "25 10 * * *"
   workflow_dispatch:
 
 permissions:
@@ -21,8 +22,15 @@ jobs:
     steps:
       - name: Check Central-time schedule
         id: schedule
+        env:
+          SCHEDULE_EXPRESSION: ${{ github.event.schedule }}
         run: |
-          if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$(TZ=America/Chicago date +%H:%M)" = "05:55" ]; then
+          offset="$(TZ=America/Chicago date +%z)"
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif [ "$offset" = "-0500" ] && [ "$SCHEDULE_EXPRESSION" = "25 9 * * *" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif [ "$offset" = "-0600" ] && [ "$SCHEDULE_EXPRESSION" = "25 10 * * *" ]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"

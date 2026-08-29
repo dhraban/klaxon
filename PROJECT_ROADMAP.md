@@ -1,6 +1,6 @@
 # Klaxon project roadmap
 
-Last updated: 2026-08-13
+Last updated: 2026-08-29
 
 ## Phase 1 — complete
 
@@ -28,7 +28,7 @@ There are no partially complete features being tracked.
 
 ### Watcher run-count warning
 
-Once per day at 6:15 AM America/Chicago time, compare the number of scheduled
+Once per day at 4:35 AM America/Chicago time, compare the number of scheduled
 Facebook sweeps with the expected number. Record a degraded result if the
 actual count is more than 10% below the expected count, then reset the counter.
 
@@ -51,8 +51,8 @@ separate routine Pushover warning.
 
 - Read and classify email contents
 - Add Messages/iMessage or other approved input sources
-- Send a daily 6:30 AM America/Chicago time Pushover summary of upcoming scheduled
-  power outages — morning brief implemented with PAGASA Bohol weather,
+- Send a daily 5:00 AM America/Chicago time silent Pushover summary of upcoming
+  scheduled power outages — implemented with PAGASA Bohol weather,
   cyclone-status, and system-health sections
 
 ## Phase 4

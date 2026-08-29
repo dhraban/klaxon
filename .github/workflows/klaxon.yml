@@ -4,9 +4,10 @@ on:
   schedule:
     # Offset from the top of the hour to reduce GitHub scheduling congestion.
     - cron: "7,22,37,52 * * * *"
-    # Run at both possible UTC offsets; the audit job gates this to 6:15 AM
-    # America/Chicago, including daylight-saving time.
-    - cron: "15 11,12 * * *"
+    # Two separate UTC triggers cover the 4:35 AM America/Chicago audit across
+    # daylight saving time. The audit gate accepts a delayed correct trigger.
+    - cron: "35 9 * * *"
+    - cron: "35 10 * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -28,7 +29,7 @@ concurrency:
 jobs:
   check-facebook:
     if: >-
-      ${{ (github.event_name != 'schedule' || github.event.schedule != '15 11,12 * * *')
+      ${{ (github.event_name != 'schedule' || (github.event.schedule != '35 9 * * *' && github.event.schedule != '35 10 * * *'))
       && (github.event_name != 'workflow_dispatch' || inputs.mode != 'health-audit') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -112,7 +113,7 @@ jobs:
 
   audit-watcher-health:
     if: >-
-      ${{ (github.event_name == 'schedule' && github.event.schedule == '15 11,12 * * *')
+      ${{ (github.event_name == 'schedule' && (github.event.schedule == '35 9 * * *' || github.event.schedule == '35 10 * * *'))
       || (github.event_name == 'workflow_dispatch' && inputs.mode == 'health-audit') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -120,8 +121,15 @@ jobs:
     steps:
       - name: Check Central-time audit schedule
         id: schedule
+        env:
+          SCHEDULE_EXPRESSION: ${{ github.event.schedule }}
         run: |
-          if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$(TZ=America/Chicago date +%H:%M)" = "06:15" ]; then
+          offset="$(TZ=America/Chicago date +%z)"
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif [ "$offset" = "-0500" ] && [ "$SCHEDULE_EXPRESSION" = "35 9 * * *" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif [ "$offset" = "-0600" ] && [ "$SCHEDULE_EXPRESSION" = "35 10 * * *" ]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
