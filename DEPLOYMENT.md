@@ -5,8 +5,8 @@ each hour. Each run checks the newest BOHECO post first. If that ID is new, it
 continues through older posts until it reaches an already processed ID. A
 five-post safety cap bounds the work, and new posts are handled oldest-to-newest.
 
-At 7:15 AM Philippine time, a separate health-check run audits the previous
-day's sweep counter. It expects 96 scheduled sweeps and records a degraded
+At 6:15 AM USA Central Standard Time (12:15 UTC), a separate health-check run
+audits the previous day's sweep counter. It expects 96 scheduled sweeps and records a degraded
 result when the count is more than 10% below that target. It does not send a
 separate health-warning Pushover message; the counter is then reset for the next
 audit period. It also writes a structured
@@ -35,14 +35,20 @@ load, dropped. A public repository's scheduled workflows are automatically
 disabled after 60 days without repository activity, so check the Actions page
 occasionally and re-enable the workflow if GitHub pauses it.
 
+The daily times currently use fixed UTC-6 (USA Central Standard Time) cron
+values because GitHub Actions schedules are UTC-based and do not adjust for
+daylight saving time. During Central Daylight Time, each displayed local time
+will therefore be one hour later until the cron values are changed.
+
 Pushover credentials are encrypted repository secrets and are not committed to
 the repository. The Klaxon source, location keywords, and seed post IDs are
 public in this free configuration.
 
 PAGASA cyclone monitoring
 -------------------------
-The PAGASA detector runs separately every day at 4:40 AM Bohol time (20:40
-UTC). It checks the official tropical-cyclone bulletin and records structured
+The PAGASA detector runs separately every day at 5:55 AM USA Central Standard
+Time (11:55 UTC). It checks the official tropical-cyclone bulletin and records
+structured
 JSON state for the later morning brief without sending a routine Pushover
 message. When a cyclone is inside PAR, it turns
 on the separate elevated monitor. That monitor wakes on a fixed hourly GitHub
@@ -67,11 +73,11 @@ one clearly labeled priority-0 sample and does not change monitor state.
 
 Morning brief
 -------------
-The `Klaxon morning brief` workflow runs at 5:15 AM Bohol time (21:15 UTC),
-after the daily PAGASA detector at 4:40 AM and the 5:07 AM Facebook sweep. The
-source workflows cache their structured results. The brief also restores the
-latest successful watcher-health result from the prior audit cycle; it does not
-re-scrape Facebook or PAGASA's cyclone bulletin.
+The `Klaxon morning brief` workflow runs at 6:30 AM USA Central Standard Time
+(12:30 UTC), after the daily PAGASA detector at 5:55 AM, the 6:15 AM health
+audit, and the 6:22 AM Facebook sweep. The source workflows cache their
+structured results. The brief also restores the latest successful watcher-health
+result; it does not re-scrape Facebook or PAGASA's cyclone bulletin.
 
 Each Facebook sweep also upserts recognized scheduled-outage notices into the
 durable `scheduled_outages` table in `klaxon_state.sqlite3`. The brief checks

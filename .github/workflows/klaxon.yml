@@ -4,8 +4,8 @@ on:
   schedule:
     # Offset from the top of the hour to reduce GitHub scheduling congestion.
     - cron: "7,22,37,52 * * * *"
-    # 7:15 AM Philippine time (UTC+8) for the previous day's run-count audit.
-    - cron: "15 23 * * *"
+    # 6:15 AM USA Central Standard Time (UTC-6) for the previous day's audit.
+    - cron: "15 12 * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -27,7 +27,7 @@ concurrency:
 jobs:
   check-facebook:
     if: >-
-      ${{ (github.event_name != 'schedule' || github.event.schedule != '15 23 * * *')
+      ${{ (github.event_name != 'schedule' || github.event.schedule != '15 12 * * *')
       && (github.event_name != 'workflow_dispatch' || inputs.mode != 'health-audit') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -79,7 +79,7 @@ jobs:
 
   audit-watcher-health:
     if: >-
-      ${{ (github.event_name == 'schedule' && github.event.schedule == '15 23 * * *')
+      ${{ (github.event_name == 'schedule' && github.event.schedule == '15 12 * * *')
       || (github.event_name == 'workflow_dispatch' && inputs.mode == 'health-audit') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5

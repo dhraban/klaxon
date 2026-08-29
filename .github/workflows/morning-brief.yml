@@ -2,9 +2,9 @@ name: Klaxon morning brief
 
 on:
   schedule:
-    # 5:15 AM Bohol time (UTC+8) = 9:15 PM UTC. The 4:40 PAGASA detector
-    # and the 5:07 Facebook sweep are scheduled ahead of this push.
-    - cron: "15 21 * * *"
+    # 6:30 AM USA Central Standard Time (UTC-6) = 12:30 PM UTC. The 5:55
+    # PAGASA detector, 6:15 health audit, and 6:22 Facebook sweep run first.
+    - cron: "30 12 * * *"
   workflow_dispatch:
 
 permissions:

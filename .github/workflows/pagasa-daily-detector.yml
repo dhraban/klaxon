@@ -2,8 +2,8 @@ name: Klaxon PAGASA daily detector
 
 on:
   schedule:
-    # 4:40 AM Bohol time (UTC+8) = 8:40 PM UTC.
-    - cron: "40 20 * * *"
+    # 5:55 AM USA Central Standard Time (UTC-6) = 11:55 AM UTC.
+    - cron: "55 11 * * *"
   workflow_dispatch:
 
 permissions:

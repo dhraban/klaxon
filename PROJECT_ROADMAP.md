@@ -29,7 +29,7 @@ There are no partially complete features being tracked.
 
 ### Watcher run-count warning
 
-Once per day at 7:15 AM Philippine time, compare the number of scheduled
+Once per day at 6:15 AM USA Central Standard Time, compare the number of scheduled
 Facebook sweeps with the expected number. Record a degraded result if the
 actual count is more than 10% below the expected count, then reset the counter.
 
@@ -50,7 +50,7 @@ separate routine Pushover warning.
 
 - Read and classify email contents
 - Add Messages/iMessage or other approved input sources
-- Send a daily 5:15 AM Philippine-time Pushover summary of upcoming scheduled
+- Send a daily 6:30 AM USA Central Standard Time Pushover summary of upcoming scheduled
   power outages — morning brief implemented with PAGASA Bohol weather,
   cyclone-status, and system-health sections
 
