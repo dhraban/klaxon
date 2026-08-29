@@ -368,11 +368,11 @@ def build_morning_brief(
 def send_morning_brief(
     message: str, send_function=send_notification
 ) -> dict[str, object]:
-    """Deliver the brief at the fixed normal Pushover priority."""
+    """Deliver the brief silently so it is waiting when the user wakes."""
     delivery = send_function(
-        title="Morning brief", message=message, priority=0, html=True
+        title="Morning brief", message=message, priority=-1, html=True
     )
-    return {**delivery, "priority": 0}
+    return {**delivery, "priority": -1}
 
 
 def parse_args() -> argparse.Namespace:

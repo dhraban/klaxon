@@ -135,8 +135,8 @@ does not fetch PAGASA or modify monitor state.
 
 Morning brief
 -------------
-The `Klaxon morning brief` workflow sends one readable Pushover priority-0
-message at 6:30 AM America/Chicago time. It runs after the
+The `Klaxon morning brief` workflow sends one readable, silent Pushover
+priority `-1` message at 5:00 AM America/Chicago time. It runs after the
 5:55 AM PAGASA detector, the 6:15 AM health audit, and the 6:22 AM Facebook
 sweep, using their cached structured results and the
 latest successfully completed watcher health audit. The brief contains Power

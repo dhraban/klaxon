@@ -83,7 +83,7 @@ one clearly labeled priority-0 sample and does not change monitor state.
 
 Morning brief
 -------------
-The `Klaxon morning brief` workflow runs at 6:30 AM America/Chicago time,
+The `Klaxon morning brief` workflow runs at 5:00 AM America/Chicago time,
 after the daily PAGASA detector at 5:55 AM, the 6:15 AM health
 audit, and the 6:22 AM Facebook sweep. The source workflows cache their
 structured results. The brief also restores the latest successful watcher-health
@@ -96,7 +96,7 @@ the configured Dauis/Mayacabac area, excludes non-overlapping dates, and
 deduplicates repeated notices with the same outage window. A notice whose date
 cannot be read is retained and reported as date/time uncertain.
 
-It sends one Pushover priority-0 message titled `Morning brief`. HTML is used
+It sends one silent Pushover priority `-1` message titled `Morning brief`. HTML is used
 only to bold the date and the four section headings; the values remain plain
 readable text. The message begins with the Bohol weekday/date, then contains
 Power today, Cyclone status, Weather, and System health sections. System health

@@ -305,7 +305,7 @@ class MorningBriefTests(unittest.TestCase):
             "No scheduled outage affecting your area.",
         )
 
-    def test_delivery_is_always_normal_priority(self) -> None:
+    def test_delivery_is_always_silent_priority(self) -> None:
         calls: list[dict[str, object]] = []
 
         def fake_send(**kwargs: object) -> dict[str, object]:
@@ -313,10 +313,10 @@ class MorningBriefTests(unittest.TestCase):
             return {"sent": True, "request_id": "brief-test"}
 
         delivery = send_morning_brief("brief body", send_function=fake_send)
-        self.assertEqual(delivery["priority"], 0)
+        self.assertEqual(delivery["priority"], -1)
         self.assertEqual(
             calls,
-            [{"title": "Morning brief", "message": "brief body", "priority": 0, "html": True}],
+            [{"title": "Morning brief", "message": "brief body", "priority": -1, "html": True}],
         )
 
 
