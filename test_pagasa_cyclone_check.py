@@ -54,6 +54,10 @@ BOHOL_SIGNAL = """
 </body></html>
 """
 
+UNRECOGNIZED_PAGASA_PAGE = """
+<html><body><h1>Temporarily unavailable</h1><p>Please try again later.</p></body></html>
+"""
+
 
 class PagasaCheckerTests(unittest.TestCase):
     def test_no_active_par_uses_daily_cadence(self) -> None:
@@ -62,6 +66,14 @@ class PagasaCheckerTests(unittest.TestCase):
         self.assertFalse(result["active_cyclone"])
         self.assertEqual(result["par_status"], "none_active")
         self.assertEqual(result["cadence"], "daily")
+        self.assertEqual(result["result_status"], "available")
+
+    def test_unrecognized_pagasa_page_is_unavailable_not_quiet(self) -> None:
+        text, _ = parse_html(UNRECOGNIZED_PAGASA_PAGE)
+        result = build_result(text, checked_at="2026-08-13T00:00:00Z")
+        self.assertEqual(result["result_status"], "unavailable")
+        self.assertIsNone(result["active_cyclone"])
+        self.assertIn("Cyclone status unavailable", result["summary"])
 
     def test_daily_detector_does_not_send_routine_pushover(self) -> None:
         from pagasa_cyclone_check import main

@@ -43,6 +43,9 @@ separate routine Pushover warning.
   routine daily detector push is consolidated into the morning brief; quiet
   days produce no standalone PAGASA push, and urgent elevated alerts remain
   separate
+- Earthquake warning — intentionally cancelled: a GitHub-hosted notifier cannot
+  provide the meaningful pre-shaking warning required, so Android's native
+  earthquake alert remains the preferred solution.
 
 ## Phase 3
 

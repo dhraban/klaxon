@@ -277,8 +277,12 @@ def build_power_section(
 def build_cyclone_section(cyclone_result: dict[str, object]) -> str:
     if not cyclone_result:
         return "Cyclone status unavailable."
-    if cyclone_result.get("active_cyclone") is not True:
+    if cyclone_result.get("result_status") == "unavailable":
+        return str(cyclone_result.get("summary") or "Cyclone status unavailable.")
+    if cyclone_result.get("active_cyclone") is False:
         return "No active tropical cyclone in PAR."
+    if cyclone_result.get("active_cyclone") is not True:
+        return str(cyclone_result.get("summary") or "Cyclone status unavailable.")
     storm_name = cyclone_result.get("storm_name") or "An active tropical cyclone"
     par_status = cyclone_result.get("par_status")
     if par_status == "inside":

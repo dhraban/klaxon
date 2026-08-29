@@ -101,8 +101,11 @@ ACCESSIBILITY_PATTERN = re.compile(
     r'"accessibility_caption":"(?P<value>(?:\\.|[^"\\])*)"'
 )
 MONTH_NAMES = (
-    "January|February|March|April|May|June|July|August|September|October|November|December"
+    "Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|"
+    "Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|"
+    "Nov(?:ember)?|Dec(?:ember)?"
 )
+TIME_VALUE_PATTERN = r"\d{1,2}(?::\d{2})?\s*(?:A\.?\s*M\.?|P\.?\s*M\.?)"
 
 
 class KlaxonTestError(RuntimeError):
@@ -135,6 +138,16 @@ def published_philippines_date(post: dict[str, object]) -> dt.date | None:
         return None
 
 
+def parse_clock_time(value: str) -> dt.datetime | None:
+    normalized = value.upper().replace(" ", "").replace(".", "")
+    for format_string in ("%I:%M%p", "%I%p"):
+        try:
+            return dt.datetime.strptime(normalized, format_string)
+        except ValueError:
+            continue
+    return None
+
+
 def extract_scheduled_outage_details(
     searchable_text: str, post: dict[str, object]
 ) -> dict[str, object]:
@@ -150,50 +163,63 @@ def extract_scheduled_outage_details(
         )
         date_end = date_start
 
-    month_match = re.search(
-        rf"(?P<month>{MONTH_NAMES})\s+(?P<day>\d{{1,2}})(?:st|nd|rd|th)?"
-        rf"(?:,?\s*(?P<year>\d{{4}}))?",
+    iso_match = re.search(
+        r"\b(?P<year>\d{4})[-/](?P<month>0?[1-9]|1[0-2])[-/](?P<day>0?[1-9]|[12]\d|3[01])\b",
         searchable_text,
-        re.IGNORECASE,
     )
-    if not month_match:
+    month_match = None
+    if iso_match:
+        try:
+            date_start = dt.date(
+                int(iso_match.group("year")),
+                int(iso_match.group("month")),
+                int(iso_match.group("day")),
+            )
+            date_end = date_start
+        except ValueError:
+            date_start = date_end = None
+    else:
         month_match = re.search(
-            rf"(?P<day>\d{{1,2}})\s+(?P<month>{MONTH_NAMES})"
+            rf"(?P<month>{MONTH_NAMES})\.?\s+(?P<day>\d{{1,2}})(?:st|nd|rd|th)?"
             rf"(?:,?\s*(?P<year>\d{{4}}))?",
             searchable_text,
             re.IGNORECASE,
         )
-    if month_match:
-        month_number = dt.datetime.strptime(
-            month_match.group("month")[:3], "%b"
-        ).month
-        year = int(month_match.group("year") or (announced_date.year if announced_date else 0))
-        if year:
-            try:
-                date_start = dt.date(year, month_number, int(month_match.group("day")))
-                date_end = date_start
-                range_match = re.match(
-                    r"\s*[-–]\s*(\d{1,2})", searchable_text[month_match.end() :]
-                )
-                if range_match:
-                    date_end = dt.date(year, month_number, int(range_match.group(1)))
-            except ValueError:
-                date_start = date_end = None
+        if not month_match:
+            month_match = re.search(
+                rf"(?P<day>\d{{1,2}})\s+(?P<month>{MONTH_NAMES})\.?"
+                rf"(?:,?\s*(?P<year>\d{{4}}))?",
+                searchable_text,
+                re.IGNORECASE,
+            )
+        if month_match:
+            month_number = dt.datetime.strptime(
+                month_match.group("month")[:3], "%b"
+            ).month
+            year = int(month_match.group("year") or (announced_date.year if announced_date else 0))
+            if year:
+                try:
+                    date_start = dt.date(year, month_number, int(month_match.group("day")))
+                    date_end = date_start
+                    range_match = re.match(
+                        r"\s*[-–]\s*(\d{1,2})", searchable_text[month_match.end() :]
+                    )
+                    if range_match:
+                        date_end = dt.date(year, month_number, int(range_match.group(1)))
+                except ValueError:
+                    date_start = date_end = None
 
     time_match = re.search(
-        r"\bfrom\s+(?P<start>\d{1,2}(?::\d{2})?\s*(?:AM|PM))\s+"
-        r"to\s+(?P<end>\d{1,2}(?::\d{2})?\s*(?:AM|PM))",
+        rf"\bfrom\s+(?P<start>{TIME_VALUE_PATTERN})\s+"
+        rf"to\s+(?P<end>{TIME_VALUE_PATTERN})",
         searchable_text,
         re.IGNORECASE,
     )
     start_time = time_match.group("start") if time_match else None
     end_time = time_match.group("end") if time_match else None
     if date_start and start_time and end_time:
-        try:
-            parsed_start = dt.datetime.strptime(start_time.upper().replace(" ", ""), "%I:%M%p")
-            parsed_end = dt.datetime.strptime(end_time.upper().replace(" ", ""), "%I:%M%p")
-        except ValueError:
-            parsed_start = parsed_end = None
+        parsed_start = parse_clock_time(start_time)
+        parsed_end = parse_clock_time(end_time)
         if parsed_start and parsed_end and parsed_end < parsed_start:
             date_end = date_start + dt.timedelta(days=1)
 

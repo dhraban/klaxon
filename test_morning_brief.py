@@ -161,6 +161,28 @@ class MorningBriefTests(unittest.TestCase):
         )
         self.assertIn("2026-08-16 from 8:00 AM to 10:00 AM", section)
 
+    def test_abbreviated_month_and_dotted_time_are_retained(self) -> None:
+        post = self.scheduled_post(
+            "abbreviated",
+            "Scheduled interruption in Dauis on Aug. 16, 2026 from 8 A.M. to 10 A.M.",
+        )
+        state = self.save_posts([post])
+        section = build_power_section(
+            {}, state_path=state, today=datetime(2026, 8, 16).date()
+        )
+        self.assertIn("2026-08-16 from 8 A.M. to 10 A.M.", section)
+
+    def test_iso_date_is_retained_without_ambiguous_numeric_guessing(self) -> None:
+        post = self.scheduled_post(
+            "iso-date",
+            "Scheduled interruption in Dauis on 2026-08-16 from 8 AM to 10 AM.",
+        )
+        state = self.save_posts([post])
+        section = build_power_section(
+            {}, state_path=state, today=datetime(2026, 8, 16).date()
+        )
+        self.assertIn("2026-08-16 from 8 AM to 10 AM.", section)
+
     def test_future_and_past_outages_are_excluded(self) -> None:
         posts = [
             self.scheduled_post("future", "Scheduled interruption in Dauis on August 18, 2026 from 8:00 AM to 10:00 AM."),
@@ -226,6 +248,20 @@ class MorningBriefTests(unittest.TestCase):
         self.assertLess(message.index("<b>Weather</b>"), message.index("<b>System health</b>"))
         self.assertIn("No active tropical cyclone in PAR.", message)
         self.assertIn("Rain showers and thunderstorms; 73–82°F (23–28°C).", message)
+
+    def test_brief_reports_unavailable_cyclone_result_without_claiming_quiet(self) -> None:
+        title, message = build_morning_brief(
+            datetime(2026, 8, 13, 0, 0, tzinfo=timezone.utc),
+            power_result(),
+            {
+                "result_status": "unavailable",
+                "summary": "Cyclone status unavailable: PAGASA response could not be parsed.",
+            },
+            parse_weather_html(WEATHER_FIXTURE),
+        )
+        self.assertEqual(title, "Morning brief")
+        self.assertIn("Cyclone status unavailable: PAGASA response could not be parsed.", message)
+        self.assertNotIn("No active tropical cyclone in PAR.", message)
 
     def test_brief_includes_completed_health_result_after_weather(self) -> None:
         _, message = build_morning_brief(

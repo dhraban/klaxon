@@ -366,17 +366,18 @@ def build_result(
     checked_at: str | None = None,
 ) -> dict[str, object]:
     checked = checked_at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    active = not bool(
+    no_active_cyclone = bool(
         re.search(
             r"No Active Tropical Cyclone within the Philippine Area of Responsibility",
             page_text,
             re.IGNORECASE,
         )
     )
-    if not active:
+    if no_active_cyclone:
         return {
             "source": source_url,
             "checked_at_utc": checked,
+            "result_status": "available",
             "active_cyclone": False,
             "storm_name": None,
             "par_status": "none_active",
@@ -392,7 +393,27 @@ def build_result(
 
     combined_text = normalized_text(f"{page_text} {pdf_text or ''}")
     storm_name = extract_storm_name(combined_text)
-    par_status = extract_par_status(combined_text, bool(storm_name))
+    if storm_name is None:
+        return {
+            "source": source_url,
+            "checked_at_utc": checked,
+            "result_status": "unavailable",
+            "active_cyclone": None,
+            "storm_name": None,
+            "par_status": "unknown",
+            "issued_at": None,
+            "forecast_positions": [],
+            "bohol_under_wind_signal": False,
+            "bohol_wind_signal": None,
+            "cadence": "daily",
+            "cap_feed_available": cap_feed_available,
+            "bulletin_url": bulletin_url,
+            "summary": (
+                "Cyclone status unavailable: PAGASA did not provide a confirmed "
+                "no-active-cyclone notice or a recognizable active bulletin."
+            ),
+        }
+    par_status = extract_par_status(combined_text, True)
     bohol_affected, signal_number, _ = extract_bohol_signal(combined_text)
     forecast_positions = extract_forecast_positions(combined_text)
     forecast_proximity = calculate_forecast_proximity(forecast_positions, checked)
@@ -406,6 +427,7 @@ def build_result(
     return {
         "source": source_url,
         "checked_at_utc": checked,
+        "result_status": "available",
         "active_cyclone": bool(storm_name),
         "storm_name": storm_name,
         "par_status": par_status,
@@ -725,7 +747,15 @@ def main() -> int:
                 "priority": notification_priority(args.mode, state, result),
                 "reason": "Pushover sending was not requested.",
             }
-        write_json(args.state_file, state_from_result(result, now))
+        # A changed or malformed PAGASA page must not silently turn off an
+        # existing elevated monitor. Keep the last known state until a
+        # confirmed quiet or active result is available.
+        next_state = (
+            state
+            if result.get("result_status") == "unavailable" and state
+            else state_from_result(result, now)
+        )
+        write_json(args.state_file, next_state)
         write_json(args.output, result)
         print(json.dumps(result, indent=2 if args.pretty else None, ensure_ascii=False))
         return 0
