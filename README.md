@@ -5,7 +5,7 @@ What this does
 This Phase 1 tester opens a temporary, anonymous Chrome browser, retrieves the
 public BOHECO Facebook page, and saves recent posts as latest_post.json. The
 alert check starts with the newest post. If its ID is new, the check continues
-through older posts until it reaches an already processed ID, with a five-post
+through older posts until it reaches an already processed ID, with a 25-post
 safety cap.
 
 It extracts:
@@ -75,7 +75,7 @@ send a notification. The Python tester only sends when explicitly run with the
 Manual alert check
 ------------------
 Double-click "Run Klaxon Alert Check.command" to run the complete manual path
-over the latest five posts:
+over the latest 25 posts:
 
 Facebook post -> outage/location rules -> duplicate check -> Pushover
 
@@ -94,7 +94,7 @@ The first database run automatically imports IDs from the earlier
 Automated deployment
 --------------------
 The project is prepared for a free GitHub Actions deployment. Every 15 minutes,
-it adaptively checks up to five BOHECO posts and stops when it reaches an ID in
+it adaptively checks up to 25 BOHECO posts and stops when it reaches an ID in
 the duplicate history. New posts are processed oldest-to-newest, and duplicate
 state is kept in the Actions cache. See "DEPLOYMENT.md" for setup and free-tier
 tradeoffs.
@@ -106,7 +106,7 @@ The accepted feature set, current work, and later phases are recorded in
 
 PAGASA cyclone checker
 ----------------------
-The daily detector runs at 5:55 AM USA Central Standard Time (11:55 UTC) and
+The daily detector runs at 5:55 AM America/Chicago time and
 writes
 "pagasa_daily_detector.json". It checks the official PAGASA tropical-cyclone
 bulletin and records the storm name, PAR status, issue time, forecast
@@ -135,7 +135,7 @@ does not fetch PAGASA or modify monitor state.
 Morning brief
 -------------
 The `Klaxon morning brief` workflow sends one readable Pushover priority-0
-message at 6:30 AM USA Central Standard Time (12:30 UTC). It runs after the
+message at 6:30 AM America/Chicago time. It runs after the
 5:55 AM PAGASA detector, the 6:15 AM health audit, and the 6:22 AM Facebook
 sweep, using their cached structured results and the
 latest successfully completed watcher health audit. The brief contains Power

@@ -4,8 +4,9 @@ on:
   schedule:
     # Offset from the top of the hour to reduce GitHub scheduling congestion.
     - cron: "7,22,37,52 * * * *"
-    # 6:15 AM USA Central Standard Time (UTC-6) for the previous day's audit.
-    - cron: "15 12 * * *"
+    # Run at both possible UTC offsets; the audit job gates this to 6:15 AM
+    # America/Chicago, including daylight-saving time.
+    - cron: "15 11,12 * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -27,7 +28,7 @@ concurrency:
 jobs:
   check-facebook:
     if: >-
-      ${{ (github.event_name != 'schedule' || github.event.schedule != '15 12 * * *')
+      ${{ (github.event_name != 'schedule' || github.event.schedule != '15 11,12 * * *')
       && (github.event_name != 'workflow_dispatch' || inputs.mode != 'health-audit') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -59,7 +60,7 @@ jobs:
       - name: Check new BOHECO posts
         run: >-
           python3 klaxon_facebook_test.py
-          --post-limit 5
+          --post-limit 25
           --send-pushover
           --output latest_post.json
 
@@ -79,16 +80,27 @@ jobs:
 
   audit-watcher-health:
     if: >-
-      ${{ (github.event_name == 'schedule' && github.event.schedule == '15 12 * * *')
+      ${{ (github.event_name == 'schedule' && github.event.schedule == '15 11,12 * * *')
       || (github.event_name == 'workflow_dispatch' && inputs.mode == 'health-audit') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
 
     steps:
+      - name: Check Central-time audit schedule
+        id: schedule
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$(TZ=America/Chicago date +%H:%M)" = "06:15" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Download Klaxon
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/checkout@v4
 
       - name: Restore duplicate history
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/cache/restore@v4
         with:
           path: klaxon_state.sqlite3
@@ -97,6 +109,7 @@ jobs:
             klaxon-state-
 
       - name: Audit and reset watcher counter
+        if: steps.schedule.outputs.run == 'true'
         run: >-
           python3 watcher_health.py
           --state-file klaxon_state.sqlite3
@@ -106,14 +119,14 @@ jobs:
           --output watcher_health.json
 
       - name: Preserve duplicate history
-        if: ${{ always() && hashFiles('klaxon_state.sqlite3') != '' }}
+        if: ${{ steps.schedule.outputs.run == 'true' && always() && hashFiles('klaxon_state.sqlite3') != '' }}
         uses: actions/cache/save@v4
         with:
           path: klaxon_state.sqlite3
           key: klaxon-state-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Preserve watcher health result
-        if: ${{ always() && hashFiles('watcher_health.json') != '' }}
+        if: ${{ steps.schedule.outputs.run == 'true' && always() && hashFiles('watcher_health.json') != '' }}
         uses: actions/cache/save@v4
         with:
           path: watcher_health.json

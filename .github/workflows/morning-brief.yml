@@ -2,9 +2,9 @@ name: Klaxon morning brief
 
 on:
   schedule:
-    # 6:30 AM USA Central Standard Time (UTC-6) = 12:30 PM UTC. The 5:55
-    # PAGASA detector, 6:15 health audit, and 6:22 Facebook sweep run first.
-    - cron: "30 12 * * *"
+    # Run at both possible UTC offsets; the first step gates this to 6:30 AM
+    # America/Chicago, including daylight-saving time.
+    - cron: "30 11,12 * * *"
   workflow_dispatch:
 
 permissions:
@@ -19,10 +19,21 @@ jobs:
       PUSHOVER_APPLICATION_TOKEN: ${{ secrets.PUSHOVER_APPLICATION_TOKEN }}
 
     steps:
+      - name: Check Central-time schedule
+        id: schedule
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$(TZ=America/Chicago date +%H:%M)" = "06:30" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Download Klaxon
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/checkout@v4
 
       - name: Restore durable Facebook outage schedule
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/cache/restore@v4
         with:
           path: klaxon_state.sqlite3
@@ -31,6 +42,7 @@ jobs:
             klaxon-state-
 
       - name: Restore latest power result
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/cache/restore@v4
         with:
           path: latest_post.json
@@ -39,6 +51,7 @@ jobs:
             klaxon-power-result-
 
       - name: Restore daily cyclone result
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/cache/restore@v4
         with:
           path: pagasa_daily_detector.json
@@ -47,6 +60,7 @@ jobs:
             pagasa-daily-result-
 
       - name: Restore latest watcher health result
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/cache/restore@v4
         with:
           path: watcher_health.json
@@ -55,6 +69,7 @@ jobs:
             watcher-health-
 
       - name: Send morning brief
+        if: steps.schedule.outputs.run == 'true'
         run: >-
           python3 morning_brief.py
           --power-file latest_post.json

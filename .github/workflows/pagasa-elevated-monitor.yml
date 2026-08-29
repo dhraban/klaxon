@@ -2,9 +2,9 @@ name: Klaxon PAGASA elevated monitor
 
 on:
   schedule:
-    # GitHub cron is static. The monitor wakes hourly except at 5:55 AM CST,
-    # when the separate daily detector owns the state transition.
-    - cron: "55 0-10,12-21,23 * * *"
+    # Retain the approved 22:55 UTC quiet window. A gate below also yields at
+    # 5:55 AM America/Chicago, when the daily detector owns the state transition.
+    - cron: "55 0-21,23 * * *"
   workflow_dispatch:
 
 permissions:
@@ -18,10 +18,21 @@ jobs:
       PUSHOVER_USER_KEY: ${{ secrets.PUSHOVER_USER_KEY }}
       PUSHOVER_APPLICATION_TOKEN: ${{ secrets.PUSHOVER_APPLICATION_TOKEN }}
     steps:
+      - name: Yield to the Central-time daily detector
+        id: schedule
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$(TZ=America/Chicago date +%H:%M)" != "05:55" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Download Klaxon
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/checkout@v4
 
       - name: Restore PAGASA monitor state
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/cache/restore@v4
         with:
           path: pagasa_state.json
@@ -30,9 +41,11 @@ jobs:
             pagasa-state-
 
       - name: Install PDF reader
+        if: steps.schedule.outputs.run == 'true'
         run: python3 -m pip install --disable-pip-version-check --no-warn-script-location -r requirements.txt
 
       - name: Run separate elevated monitor
+        if: steps.schedule.outputs.run == 'true'
         run: >-
           python3 pagasa_cyclone_check.py
           --mode monitor
@@ -42,7 +55,7 @@ jobs:
           --pretty
 
       - name: Preserve PAGASA monitor state
-        if: ${{ always() && hashFiles('pagasa_state.json') != '' }}
+        if: ${{ steps.schedule.outputs.run == 'true' && always() && hashFiles('pagasa_state.json') != '' }}
         uses: actions/cache/save@v4
         with:
           path: pagasa_state.json

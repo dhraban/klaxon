@@ -3,9 +3,9 @@
 Klaxon runs on GitHub Actions every 15 minutes at minutes 7, 22, 37, and 52 of
 each hour. Each run checks the newest BOHECO post first. If that ID is new, it
 continues through older posts until it reaches an already processed ID. A
-five-post safety cap bounds the work, and new posts are handled oldest-to-newest.
+25-post safety cap bounds the work, and new posts are handled oldest-to-newest.
 
-At 6:15 AM USA Central Standard Time (12:15 UTC), a separate health-check run
+At 6:15 AM America/Chicago time, a separate health-check run
 audits the previous day's sweep counter. It expects 96 scheduled sweeps and records a degraded
 result when the count is more than 10% below that target. It does not send a
 separate health-warning Pushover message; the counter is then reset for the next
@@ -23,7 +23,7 @@ Manual workflow runs do not affect the counter.
    - `PUSHOVER_APPLICATION_TOKEN`
 5. Open **Actions → Klaxon Facebook monitor → Run workflow** for the first test.
 
-The workflow carries the five post IDs already processed during local testing.
+The workflow carries the seed post IDs already processed during local testing.
 After the first run, its SQLite history is restored and saved using GitHub's
 Actions cache. The database continues to retain only the newest 20 IDs.
 
@@ -35,10 +35,9 @@ load, dropped. A public repository's scheduled workflows are automatically
 disabled after 60 days without repository activity, so check the Actions page
 occasionally and re-enable the workflow if GitHub pauses it.
 
-The daily times currently use fixed UTC-6 (USA Central Standard Time) cron
-values because GitHub Actions schedules are UTC-based and do not adjust for
-daylight saving time. During Central Daylight Time, each displayed local time
-will therefore be one hour later until the cron values are changed.
+The daily Central-time jobs wake at both possible UTC offsets and use an
+America/Chicago gate before doing work, so their intended local times remain
+correct through daylight-saving changes.
 
 Pushover credentials are encrypted repository secrets and are not committed to
 the repository. The Klaxon source, location keywords, and seed post IDs are
@@ -46,8 +45,8 @@ public in this free configuration.
 
 PAGASA cyclone monitoring
 -------------------------
-The PAGASA detector runs separately every day at 5:55 AM USA Central Standard
-Time (11:55 UTC). It checks the official tropical-cyclone bulletin and records
+The PAGASA detector runs separately every day at 5:55 AM America/Chicago time.
+It checks the official tropical-cyclone bulletin and records
 structured
 JSON state for the later morning brief without sending a routine Pushover
 message. When a cyclone is inside PAR, it turns
@@ -73,8 +72,8 @@ one clearly labeled priority-0 sample and does not change monitor state.
 
 Morning brief
 -------------
-The `Klaxon morning brief` workflow runs at 6:30 AM USA Central Standard Time
-(12:30 UTC), after the daily PAGASA detector at 5:55 AM, the 6:15 AM health
+The `Klaxon morning brief` workflow runs at 6:30 AM America/Chicago time,
+after the daily PAGASA detector at 5:55 AM, the 6:15 AM health
 audit, and the 6:22 AM Facebook sweep. The source workflows cache their
 structured results. The brief also restores the latest successful watcher-health
 result; it does not re-scrape Facebook or PAGASA's cyclone bulletin.

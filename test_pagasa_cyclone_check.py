@@ -250,6 +250,15 @@ class PagasaCheckerTests(unittest.TestCase):
         self.assertEqual(delivery["priority"], 1)
         self.assertEqual(calls[0]["priority"], 1)
 
+    def test_newly_detected_bohol_wind_signal_uses_priority_one(self) -> None:
+        text, _ = parse_html(BOHOL_SIGNAL)
+        result = build_result(text, checked_at="2026-08-13T00:00:00Z")
+        prior_state = {
+            "cadence": "every_3_hours",
+            "bohol_under_wind_signal": False,
+        }
+        self.assertEqual(notification_priority("monitor", prior_state, result), 1)
+
     def test_sample_pushover_is_labeled_and_priority_zero(self) -> None:
         calls = []
 

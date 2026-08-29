@@ -10,11 +10,10 @@ This includes:
 - Pushover delivery to the iPhone
 - Scheduled-outage priority 0 notifications
 - Emergency-outage priority 1 notifications
-- Email auto-forwarding to Pushover
 - Anonymous BOHECO Facebook access
 - Adaptive recent-post polling every 15 minutes
 - Continued sweeping after a new ID until a processed ID is reached
-- Five-post safety cap with oldest-to-newest processing
+- 25-post safety cap with oldest-to-newest processing
 - Caption and Facebook image-accessibility-text inspection
 - Dauis and Mayacabac location matching
 - Deterministic outage filtering
@@ -29,7 +28,7 @@ There are no partially complete features being tracked.
 
 ### Watcher run-count warning
 
-Once per day at 6:15 AM USA Central Standard Time, compare the number of scheduled
+Once per day at 6:15 AM America/Chicago time, compare the number of scheduled
 Facebook sweeps with the expected number. Record a degraded result if the
 actual count is more than 10% below the expected count, then reset the counter.
 
@@ -44,13 +43,12 @@ separate routine Pushover warning.
   routine daily detector push is consolidated into the morning brief; quiet
   days produce no standalone PAGASA push, and urgent elevated alerts remain
   separate
-- Earthquake warning
 
 ## Phase 3
 
 - Read and classify email contents
 - Add Messages/iMessage or other approved input sources
-- Send a daily 6:30 AM USA Central Standard Time Pushover summary of upcoming scheduled
+- Send a daily 6:30 AM America/Chicago time Pushover summary of upcoming scheduled
   power outages — morning brief implemented with PAGASA Bohol weather,
   cyclone-status, and system-health sections
 

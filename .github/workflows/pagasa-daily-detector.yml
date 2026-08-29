@@ -2,8 +2,9 @@ name: Klaxon PAGASA daily detector
 
 on:
   schedule:
-    # 5:55 AM USA Central Standard Time (UTC-6) = 11:55 AM UTC.
-    - cron: "55 11 * * *"
+    # Run at both possible UTC offsets; the first step gates this to 5:55 AM
+    # America/Chicago, including daylight-saving time.
+    - cron: "55 10,11 * * *"
   workflow_dispatch:
 
 permissions:
@@ -14,10 +15,21 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
+      - name: Check Central-time schedule
+        id: schedule
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "schedule" ] || [ "$(TZ=America/Chicago date +%H:%M)" = "05:55" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Download Klaxon
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/checkout@v4
 
       - name: Restore PAGASA monitor state
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/cache/restore@v4
         with:
           path: pagasa_state.json
@@ -26,9 +38,11 @@ jobs:
             pagasa-state-
 
       - name: Install PDF reader
+        if: steps.schedule.outputs.run == 'true'
         run: python3 -m pip install --disable-pip-version-check --no-warn-script-location -r requirements.txt
 
       - name: Run daily PAGASA detector without routine push
+        if: steps.schedule.outputs.run == 'true'
         run: >-
           python3 pagasa_cyclone_check.py
           --mode daily-detector
@@ -37,14 +51,14 @@ jobs:
           --pretty
 
       - name: Preserve daily cyclone result for morning brief
-        if: ${{ always() && hashFiles('pagasa_daily_detector.json') != '' }}
+        if: ${{ steps.schedule.outputs.run == 'true' && always() && hashFiles('pagasa_daily_detector.json') != '' }}
         uses: actions/cache/save@v4
         with:
           path: pagasa_daily_detector.json
           key: pagasa-daily-result-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Preserve PAGASA monitor state
-        if: ${{ always() && hashFiles('pagasa_state.json') != '' }}
+        if: ${{ steps.schedule.outputs.run == 'true' && always() && hashFiles('pagasa_state.json') != '' }}
         uses: actions/cache/save@v4
         with:
           path: pagasa_state.json

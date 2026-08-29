@@ -462,14 +462,18 @@ def notification_priority(
     """Select the alert level for one actual PAGASA fetch.
 
     A daily detector and a three-hour elevated check are normal priority. An
-    elevated fetch is high priority only when it was scheduled in the prior
-    state as an hourly Bohol wind-signal check. The prior state matters when a
-    fetch discovers that the signal has just cleared.
+    elevated fetch is high priority when the current bulletin has a Bohol wind
+    signal, or when the previous hourly signal check discovers that it cleared.
     """
     if (
         mode == "monitor"
-        and prior_state.get("cadence") == "hourly"
-        and prior_state.get("bohol_under_wind_signal") is True
+        and (
+            result.get("bohol_under_wind_signal") is True
+            or (
+                prior_state.get("cadence") == "hourly"
+                and prior_state.get("bohol_under_wind_signal") is True
+            )
+        )
     ):
         return 1
     return 0

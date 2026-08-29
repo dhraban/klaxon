@@ -83,6 +83,7 @@ DEFAULT_STATE_PATH = Path(__file__).resolve().with_name("klaxon_state.sqlite3")
 LEGACY_STATE_PATH = Path(__file__).resolve().with_name("processed_posts.json")
 SEED_STATE_PATH = Path(__file__).resolve().with_name("seed_processed_posts.json")
 MAX_PROCESSED_POST_IDS = 20
+MAX_POSTS_PER_SWEEP = 25
 WATCHER_COUNTER_NAME = "facebook_sweeps"
 
 POST_META_PATTERN = re.compile(
@@ -1023,10 +1024,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--post-limit",
         type=int,
-        choices=range(1, 11),
+        choices=range(1, MAX_POSTS_PER_SWEEP + 1),
         default=1,
-        metavar="1-10",
-        help="Number of recent Facebook posts to inspect (default: 1).",
+        metavar=f"1-{MAX_POSTS_PER_SWEEP}",
+        help=(
+            "Number of recent Facebook posts to inspect "
+            f"(maximum {MAX_POSTS_PER_SWEEP}; default: 1)."
+        ),
     )
     parser.add_argument(
         "--state-file",
