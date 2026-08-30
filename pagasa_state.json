@@ -1,5 +1,5 @@
 {
-  "updated_at_utc": "2026-08-30T12:59:58.916195Z",
+  "updated_at_utc": "2026-08-30T15:59:59.080289Z",
   "monitoring_enabled": true,
   "active_cyclone": true,
   "storm_name": "PILANDOK",
@@ -7,5 +7,5 @@
   "bohol_under_wind_signal": false,
   "bohol_wind_signal": null,
   "cadence": "every_3_hours",
-  "next_monitor_check_at_utc": "2026-08-30T15:59:58.916195Z"
+  "next_monitor_check_at_utc": "2026-08-30T18:59:59.080289Z"
 }
