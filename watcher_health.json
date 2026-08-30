@@ -1,0 +1,12 @@
+{
+  "audit_succeeded": true,
+  "audited_at_utc": "2026-08-30T09:42:04.501839Z",
+  "period_started_at_utc": "2026-08-28T23:15:50.196395+00:00",
+  "run_count": 137,
+  "expected_runs": 96,
+  "minimum_fraction": 0.9,
+  "minimum_count": 86.4,
+  "status": "healthy",
+  "summary": "Facebook watcher run count was within the acceptable range.",
+  "reset_at_utc": "2026-08-30T09:42:04.503484Z"
+}
