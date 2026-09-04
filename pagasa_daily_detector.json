@@ -1,80 +1,18 @@
 {
   "source": "https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin",
-  "checked_at_utc": "2026-09-03T09:33:53.370014Z",
+  "checked_at_utc": "2026-09-04T09:33:47.340204Z",
   "result_status": "available",
-  "active_cyclone": true,
-  "storm_name": "PILANDOK",
-  "par_status": "outside",
-  "issued_at": "11:00 am, 03 September 2026 (Valid for broadcast until the next advisory to be issued at ) PILANDOK HAS EXITED THE PHILIPPINE AREA OF RESPONSIBILITY HAZARDS AFFECTING LAND AREAS Heavy Rainfall Outlook Refer to Weather Advisory No. 47 issued at 11:00 AM today for the heavy rainfall outlook due to the Southwest Monsoon. Severe Winds The Southwest Monsoon will bring strong to gale-force gusts over the following areas (especially in coastal and upland areas exposed to winds): Today until Saturday (05 September): Most of Luzon and Visayas, Zamboanga del Norte, Misamis Occidental, Lanao del Norte, Misamis Oriental, Camiguin, Dinagat Islands, Davao Occidental, and Davao Oriental. HAZARDS AFFECTING COASTAL WATERS 24-Hour Sea Condition Outlook Up to rough seas over the following coastal waters: Up to 4.0 m: The western and southern seaboards of Batanes; the western seaboard of Babuyan Islands; the northern seaboard of Ilocos Norte; Up to 3.5 m: The remaining seaboards of Batanes and Ilocos Norte; the seaboards of Ilocos Sur, La Union, and Zambales; the western seaboard of Pangasinan; the western and southern seaboards of Bataan; the northern and western seaboards Lubang Islands; the northwestern seaboard of Occidental Mindoro. Up to 3.0 m: The remaining seaboards of Babuyan Islands; the western seaboards of Cavite, Batangas, northern Occidental Mindoro; the northwestern seaboards of Calamian Islands, and Kalayaan Islands. Mariners of small seacrafts, including all types of motorbancas, are advised not to venture out to sea under these conditions, especially if inexperienced or operating ill-equipped vessels. Up to moderate seas over the following coastal waters: Up to 2.5 m: The seaboard of Isabela, northern Aurora, Surigao del Sur, and Davao Oriental; the western seaboard of northern Palawan; the remaining seaboards of Kalayaan Islands, Occidental Mindoro, and Pangasinan. Up to 2.0 m: The seaboards of Cagayan, Romblon, Cuyo Islands, Cagayancillo Islands, and Antique; the southern seaboards of Quezon, Marinduque, Camarines Sur, Iloilo, and Guimaras; the eastern and southern seaboards of Oriental Mindoro; the western seaboard of southern Negros Occidental; the remaining western seaboard of mainland Palawan; the remaining seaboards of Occidental Mindoro. Mariners of motorbancas and similarly sized vessels are advised to take precautionary measures while venturing out to sea and, if possible, avoid navigation under these conditions. Other coastal waters have forecast wave heights of less than 2.0 m. TRACK AND INTENSITY OUTLOOK Outside the PAR, PILANDOK will continue moving generally northwestward towards southern Japan. Beginning tomorrow (04 September) until Sunday (06 September), it will remain almost stationary then move generally southward, looping over the area of Okinawa-Amami islands. By Monday (07 September), it will move generally southeastward before turning northeastward by Tuesday (08 September). PILANDOK is forecast to remain as a tropical storm throughout the entire forecast period. Location of Eye/center The center of Tropical Storm PILANDOK was estimated based on all available data at 1,050 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) (26.8 °N, 129.8 °E ) Movement Moving Northward at 30 km/h Strength Maximum sustained winds of 85 km/h near the center and gustiness of up to 105 km/h Forecast Position Sep 03, 2026 08:00 PM - 1,050 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) Sep 04, 2026 08:00 AM - 1,085 km North Northeast of Extreme Northern Luzon (OUTSIDE PAR) Sep 04, 2026 08:00 PM - 1,035 km North Northeast of Extreme Northern Luzon (OUTSIDE PAR) Sep 05, 2026 08:00 AM - 935 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) Sep 05, 2026 08:00 PM - 875 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) Sep 06, 2026 08:00 AM - 880 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) Sep 07, 2026 08:00 AM - 970 km East Northeast of Extreme Northern Luzon (OUTSIDE PAR) Sep 08, 2026 08:00 AM - 1,105 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) Wind Signal No Tropical Cyclone Wind Signal Considering these developments, the public and disaster risk reduction and management offices concerned are advised to take all necessary measures to protect life and property. Persons living in areas identified to be highly or very highly susceptible to these hazards are advised to follow evacuation and other instructions from local officials. For heavy rainfall warnings, thunderstorm/rainfall advisories, and other severe weather information specific to your area, please monitor products issued by your local PAGASA Regional Services Division. Tropical Cyclone Bulletin Archive TCB#1_pilandok.pdf TCB#2_pilandok.pdf TCB#3_pilandok.pdf TCB#4_pilandok.pdf TCB#5_pilandok.pdf TCB#6_pilandok.pdf TCB#7_pilandok.pdf TCB#8_pilandok.pdf TCB#9_pilandok.pdf TCB#10_pilandok.pdf TCB#11_pilandok.pdf TCB#12_pilandok.pdf TCB#13_pilandok.pdf TCB#14_pilandok.pdf TCB#15_pilandok.pdf TCB#16_pilandok.pdf TCB#17_pilandok.pdf We always find ways to improve our weather products and services. Click Here to get started with our short survey. Your Feedback is important to us. TROPICAL CYCLONE BULLETIN NR. 17F Tropical Storm PILANDOK (KROVANH) Issued at 11:00 AM, 03 September 2026",
-  "forecast_positions": [
-    {
-      "forecast_window": "12-Hour Forecast",
-      "valid_at": "8:00 PM 03 September 2026",
-      "latitude": 27.9,
-      "longitude": 128.7,
-      "details": "1,050 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) 75 TS NW 20"
-    },
-    {
-      "forecast_window": "24-Hour Forecast",
-      "valid_at": "8:00 AM 04 September 2026",
-      "latitude": 29.0,
-      "longitude": 127.7,
-      "details": "1,085 km North Northeast of Extreme Northern Luzon (OUTSIDE PAR) 75 TS NW 15"
-    },
-    {
-      "forecast_window": "36-Hour Forecast",
-      "valid_at": "8:00 PM 04 September 2026",
-      "latitude": 28.7,
-      "longitude": 127.3,
-      "details": "1,035 km North Northeast of Extreme Northern Luzon (OUTSIDE PAR) 75 TS SW Slowly"
-    },
-    {
-      "forecast_window": "48-Hour Forecast",
-      "valid_at": "8:00 AM 05 September 2026",
-      "latitude": 27.6,
-      "longitude": 127.3,
-      "details": "935 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) 65 TS S 10"
-    },
-    {
-      "forecast_window": "60-Hour Forecast",
-      "valid_at": "8:00 PM 05 September 2026",
-      "latitude": 26.4,
-      "longitude": 127.9,
-      "details": "875 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) 65 TS SSE 10"
-    },
-    {
-      "forecast_window": "72-Hour Forecast",
-      "valid_at": "8:00 AM 06 September 2026",
-      "latitude": 25.7,
-      "longitude": 128.6,
-      "details": "880 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) 65 TS SE 10"
-    },
-    {
-      "forecast_window": "96-Hour Forecast",
-      "valid_at": "8:00 AM 07 September 2026",
-      "latitude": 25.2,
-      "longitude": 130.0,
-      "details": "970 km East Northeast of Extreme Northern Luzon (OUTSIDE PAR) 65 TS ESE Slowly"
-    },
-    {
-      "forecast_window": "120-Hour Forecast",
-      "valid_at": "8:00 AM 08 September 2026",
-      "latitude": 26.4,
-      "longitude": 130.8,
-      "details": "1,105 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) 65 TS NNE Slowly TROPICAL CYCLONE BULLETIN NR. 17F Tropical Storm PILANDOK (KROVANH) Issued at 11:00 AM, 03 September 2026 Prepared by: MJB Checked by: CFP “tracking the sky…helping the country.” Weather and Flood Forecasting Center Tel. No.: (+632) 8284-0800 ext. 4800 Senator Miriam P. Defensor-Santiago Avenue Website: https://bagong.pagasa.dost.gov.ph Brgy. Central, Quezon City 1100, Philippines Republic of the Philippines DEPARTMENT OF SCIENCE AND TECHNOLOGY Philippine Atmospheric, Geophysical and Astronomical Services Administration (PAGASA) Weather Division MMSS-04 Rev.1 / 24-06-2024 Page 2 of 3 OTHER HAZARDS AFFECTING LAND AREAS Heavy Rainfall Outlook Refer to Weather Advisory No. 47 issued at 11:00 AM today for the heavy rainfall outlook due to the Southwest Monsoon. Severe Winds The Southwest Monsoon will bring strong to gale-force gusts over the following areas (especially in coastal and upland areas exposed to winds):  Today until Saturday (05 September): Most of Luzon and Visayas, Zamboanga del Norte, Misamis Occidental, Lanao del Norte, Misamis Oriental, Camiguin, Dinagat Islands, Davao Occidental, and Davao Oriental."
-    }
-  ],
-  "forecast_proximity_to_bohol": {
-    "reference": "Dauis, Bohol",
-    "threshold_km": 250.0,
-    "within_threshold": false
-  },
+  "active_cyclone": false,
+  "storm_name": null,
+  "par_status": "none_active",
+  "issued_at": null,
+  "forecast_positions": [],
   "bohol_under_wind_signal": false,
   "bohol_wind_signal": null,
   "cadence": "daily",
   "cap_feed_available": true,
-  "bulletin_url": "https://pubfiles.pagasa.dost.gov.ph/tamss/weather/bulletin/TCB%2317_pilandok.pdf",
-  "summary": "PILANDOK: PAR status outside; Bohol wind signal no; cadence daily.",
+  "bulletin_url": null,
+  "summary": "No active tropical cyclone within PAR.",
   "checked": true,
   "monitoring_enabled": false,
   "next_monitor_check_at_utc": null,
