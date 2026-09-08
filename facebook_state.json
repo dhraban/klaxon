@@ -1,14 +1,6 @@
 {
   "processed_posts": [
     {
-      "classification": "scheduled",
-      "delivered_at_utc": null,
-      "delivery_status": "ignored",
-      "first_seen_at_utc": "2026-08-31T00:01:08.723299+00:00",
-      "post_id": "1591841419396506",
-      "pushover_priority": null
-    },
-    {
       "classification": "emergency",
       "delivered_at_utc": null,
       "delivery_status": "ignored",
@@ -159,6 +151,14 @@
       "first_seen_at_utc": "2026-09-07T23:01:27.000341+00:00",
       "post_id": "1600793475167967",
       "pushover_priority": null
+    },
+    {
+      "classification": "scheduled",
+      "delivered_at_utc": "2026-09-08T00:01:11.701053+00:00",
+      "delivery_status": "sent",
+      "first_seen_at_utc": "2026-09-08T00:01:11.701053+00:00",
+      "post_id": "1600785981835383",
+      "pushover_priority": 0
     }
   ],
   "scheduled_outages": [
@@ -235,6 +235,21 @@
       "source_post_id": "1590761316171183",
       "source_text": "𝗕𝗢𝗛𝗘𝗖𝗢 𝗜 𝗣𝗢𝗪𝗘𝗥 𝗜𝗡𝗧𝗘𝗥𝗥𝗨𝗣𝗧𝗜𝗢𝗡 𝗔𝗗𝗩𝗜𝗦𝗢𝗥𝗬\nPlease be informed that 𝗽𝗼𝘄𝗲𝗿 𝘄𝗶𝗹𝗹 𝗯𝗲 𝘁𝗲𝗺𝗽𝗼𝗿𝗮𝗿𝗶𝗹𝘆 𝘂𝗻𝗮𝘃𝗮𝗶𝗹𝗮𝗯𝗹𝗲: \n\n📅 𝐒𝐞𝐩𝐭𝐞𝐦𝐛𝐞𝐫 𝟏, 𝟐𝟎𝟐𝟔 (𝐓𝐮𝐞𝐬𝐝𝐚𝐲)\n⏰ 𝟏𝟎:𝟎𝟎 𝐀𝐌 - 𝟒:𝟎𝟎 𝐏𝐌\n\n📍 𝐃𝐚𝐮𝐢𝐬 (Songculan, Power line along the residence of Mr. Carlo Logroño)\n\n💥𝗥𝗲𝗮𝘀𝗼𝗻: Pole Relocation\n\nThis activity is part of our ongoing efforts 𝘁𝗼 𝘀𝘁𝗿𝗲𝗻𝗴𝘁𝗵𝗲𝗻 𝗕𝗢𝗛𝗘𝗖𝗢 𝗜’𝘀 𝗱𝗶𝘀𝘁𝗿𝗶𝗯𝘂𝘁𝗶𝗼𝗻 𝘀𝘆𝘀𝘁𝗲𝗺 and ensure a more stable, reliable, and efficient power supply.\n𝐎𝐮𝐫 𝐖𝐚𝐫𝐫𝐢𝐨𝐫𝐬 𝐨𝐟 𝐋𝐢𝐠𝐡𝐭 will work safely and efficiently to restore power at the soonest possible time.\n⚠️ Please note that 𝗽𝗼𝘄𝗲𝗿 𝗺𝗮𝘆 𝗯𝗲 𝗿𝗲𝘀𝘁𝗼𝗿𝗲𝗱 𝘄𝗶𝘁𝗵𝗼𝘂𝘁 𝗽𝗿𝗶𝗼𝗿 𝗻𝗼𝘁𝗶𝗰𝗲 once work is completed. Kindly 𝘀𝘁𝗮𝘆 𝘀𝗮𝗳𝗲 and take necessary precautions.\nWe understand this may cause inconvenience, and we sincerely appreciate your 𝗰𝗼𝗻𝘁𝗶𝗻𝘂𝗲𝗱 𝗽𝗮𝘁𝗶𝗲𝗻𝗰𝗲 𝗮𝗻𝗱 𝘂𝗻𝗱𝗲𝗿𝘀𝘁𝗮𝗻𝗱𝗶𝗻𝗴. 💡💖\n👉 𝙐𝙥𝙙𝙖𝙩𝙚𝙨 𝙬𝙞𝙡𝙡 𝙗𝙚 𝙥𝙤𝙨𝙩𝙚𝙙 𝙞𝙣 𝙩𝙝𝙚 𝙘𝙤𝙢𝙢𝙚𝙣𝙩 𝙨𝙚𝙘𝙩𝙞𝙤𝙣 𝙗𝙚𝙡𝙤𝙬.",
       "source_url": "https://www.facebook.com/BOHECO1officialpage/posts/pfbid03156pUPFuos2aPQBHMrwSENnbkKGkTNzKhbyAxWMfWbNWnW8E8JK9UmnczGLwzPWrl",
+      "start_time": null
+    },
+    {
+      "announced_date": "2026-09-08",
+      "date_status": "known",
+      "end_time": null,
+      "first_seen_at_utc": "2026-09-08T00:01:11.301577+00:00",
+      "location_terms_json": "[\"Dauis\"]",
+      "location_text": "Dauis",
+      "outage_date_end": "2026-09-12",
+      "outage_date_start": "2026-09-12",
+      "schedule_key": "2026-09-12|2026-09-12|unknown|unknown|dauis",
+      "source_post_id": "1600785981835383",
+      "source_text": "𝗕𝗢𝗛𝗘𝗖𝗢 𝗜 𝗣𝗢𝗪𝗘𝗥 𝗜𝗡𝗧𝗘𝗥𝗥𝗨𝗣𝗧𝗜𝗢𝗡 𝗔𝗗𝗩𝗜𝗦𝗢𝗥𝗬\nPlease be informed that 𝗽𝗼𝘄𝗲𝗿 𝘄𝗶𝗹𝗹 𝗯𝗲 𝘁𝗲𝗺𝗽𝗼𝗿𝗮𝗿𝗶𝗹𝘆 𝘂𝗻𝗮𝘃𝗮𝗶𝗹𝗮𝗯𝗹𝗲:\n\n📅 𝐒𝐞𝐩𝐭𝐞𝐦𝐛𝐞𝐫 𝟏𝟐, 𝟐𝟎𝟐𝟔 (𝐒𝐚𝐭𝐮𝐫𝐝𝐚𝐲)\n⏰ 𝟖:𝟎𝟎 𝐀𝐌 - 𝟒:𝟎𝟎 𝐏𝐌\n\n📍 𝐃𝐚𝐮𝐢𝐬 (portion of Bingag), and 𝐏𝐚𝐧𝐠𝐥𝐚𝐨 (portion of Tangnan), specifically along the Anos Fonacier Circumferential Road from the corner of the Tinago - Bingag Road to the corner of the Lourdes - Tangnan Brgy. Road)\n\n💥𝗥𝗲𝗮𝘀𝗼𝗻: Line Conversion\n\nThis activity is part of our ongoing efforts 𝘁𝗼 𝘀𝘁𝗿𝗲𝗻𝗴𝘁𝗵𝗲𝗻 𝗕𝗢𝗛𝗘𝗖𝗢 𝗜’𝘀 𝗱𝗶𝘀𝘁𝗿𝗶𝗯𝘂𝘁𝗶𝗼𝗻 𝘀𝘆𝘀𝘁𝗲𝗺 and ensure a more stable, reliable, and efficient power supply.\n𝐎𝐮𝐫 𝐖𝐚𝐫𝐫𝐢𝐨𝐫𝐬 𝐨𝐟 𝐋𝐢𝐠𝐡𝐭 will work safely and efficiently to restore power at the soonest possible time.\n⚠️ Please note that 𝗽𝗼𝘄𝗲𝗿 𝗺𝗮𝘆 𝗯𝗲 𝗿𝗲𝘀𝘁𝗼𝗿𝗲𝗱 𝘄𝗶𝘁𝗵𝗼𝘂𝘁 𝗽𝗿𝗶𝗼𝗿 𝗻𝗼𝘁𝗶𝗰𝗲 once work is completed. Kindly 𝘀𝘁𝗮𝘆 𝘀𝗮𝗳𝗲 and take necessary precautions.\nWe understand this may cause inconvenience, and we sincerely appreciate your 𝗰𝗼𝗻𝘁𝗶𝗻𝘂𝗲𝗱 𝗽𝗮𝘁𝗶𝗲𝗻𝗰𝗲 𝗮𝗻𝗱 𝘂𝗻𝗱𝗲𝗿𝘀𝘁𝗮𝗻𝗱𝗶𝗻𝗴. 💡💖\n👉 𝙐𝙥𝙙𝙖𝙩𝙚𝙨 𝙬𝙞𝙡𝙡 𝙗𝙚 𝙥𝙤𝙨𝙩𝙚𝙙 𝙞𝙣 𝙩𝙝𝙚 𝙘𝙤𝙢𝙢𝙚𝙣𝙩 𝙨𝙚𝙘𝙩𝙞𝙤𝙣 𝙗𝙚𝙡𝙤𝙬.",
+      "source_url": "https://www.facebook.com/BOHECO1officialpage/posts/pfbid02Qp2eS8oyst1QVQAPf15TWyP5wFR2XfVG7bvPLWrLqawM4QiLFMuxGwcexNpwoD7Cl",
       "start_time": null
     }
   ],
