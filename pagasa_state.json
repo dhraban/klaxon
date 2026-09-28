@@ -1,9 +1,9 @@
 {
-  "updated_at_utc": "2026-09-27T14:44:54.129719Z",
+  "updated_at_utc": "2026-09-28T17:43:33.268819Z",
   "monitoring_enabled": false,
-  "active_cyclone": true,
-  "storm_name": "QUEENIE",
-  "par_status": "outside",
+  "active_cyclone": false,
+  "storm_name": null,
+  "par_status": "none_active",
   "bohol_under_wind_signal": false,
   "bohol_wind_signal": null,
   "cadence": "daily",

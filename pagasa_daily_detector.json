@@ -1,38 +1,18 @@
 {
   "source": "https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin",
-  "checked_at_utc": "2026-09-27T14:45:03.816065Z",
+  "checked_at_utc": "2026-09-28T17:43:40.196370Z",
   "result_status": "available",
-  "active_cyclone": true,
-  "storm_name": "QUEENIE",
-  "par_status": "outside",
-  "issued_at": "05:00 pm, 27 September 2026 (Valid for broadcast until the next advisory to be issued at 5:00 AM tomorrow) QUEENIE HAS EXITED THE PHILIPPINE AREA OF RESPONSIBILITY. HAZARDS AFFECTING LAND AREAS QUEENIE is unlikely to directly affect the country throughout the forecast period. HAZARDS AFFECTING COASTAL WATERS 24-Hour Sea Condition Outlook Coastal waters have forecast wave heights of less than 2.0 m. TRACK AND INTENSITY OUTLOOK Outside PAR, QUEENIE is forecast to accelerate northeastward towards the sea south of mainland Japan. QUEENIE is currently considered to be near its peak intensity. However, slight intensification remains possible. It is forecast to begin weakening by tomorrow (28 September). Location of Eye/center The center of the eye of Typhoon QUEENIE was estimated based on all available data at 865 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) (25.6 °N, 128.5 °E ) Movement Moving Northwestward at 20 km/h Strength Maximum sustained winds of 155 km/h near the center and gustiness of up to 190 km/h Forecast Position Sep 28, 2026 02:00 AM - 1,025 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) Sep 28, 2026 02:00 PM - 1,225 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) Wind Signal No Tropical Cyclone Wind Signal Considering these developments, the public and disaster risk reduction and management offices concerned are advised to take all necessary measures to protect life and property. Persons living in areas identified to be highly or very highly susceptible to these hazards are advised to follow evacuation and other instructions from local officials. For heavy rainfall warnings, thunderstorm/rainfall advisories, and other severe weather information specific to your area, please monitor products issued by your local PAGASA Regional Services Division. Tropical Cyclone Bulletin Archive TCB#1_queenie.pdf TCB#2_queenie.pdf TCB#3_queenie.pdf TCB#4_queenie.pdf TCB#5_queenie.pdf TCB#6_queenie.pdf TCB#7_queenie.pdf TCB#8_queenie.pdf TCB#9_queenie.pdf TCB#10_queenie.pdf TCB#11_queenie.pdf TCB#12_queenie.pdf TCB#13_queenie.pdf TCB#14_queenie.pdf We always find ways to improve our weather products and services. Click Here to get started with our short survey. Your Feedback is important to us. TROPICAL CYCLONE BULLETIN NR. 14F Typhoon QUEENIE (SURIGAE) Issued at 5:00 PM, 27 September 2026",
-  "forecast_positions": [
-    {
-      "forecast_window": "12-Hour Forecast",
-      "valid_at": "2:00 AM 28 September 2026",
-      "latitude": 26.4,
-      "longitude": 129.8,
-      "details": "1,025 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) 155 TY NE 15"
-    },
-    {
-      "forecast_window": "24-Hour Forecast",
-      "valid_at": "2:00 PM 28 September 2026",
-      "latitude": 27.4,
-      "longitude": 131.5,
-      "details": "1,225 km Northeast of Extreme Northern Luzon (OUTSIDE PAR) 150 TY ENE 15 OTHER HAZARDS AFFECTING LAND AREAS QUEENIE is unlikely to directly affect the country throughout the forecast period."
-    }
-  ],
-  "forecast_proximity_to_bohol": {
-    "reference": "Dauis, Bohol",
-    "threshold_km": 250.0,
-    "within_threshold": false
-  },
+  "active_cyclone": false,
+  "storm_name": null,
+  "par_status": "none_active",
+  "issued_at": null,
+  "forecast_positions": [],
   "bohol_under_wind_signal": false,
   "bohol_wind_signal": null,
   "cadence": "daily",
   "cap_feed_available": true,
-  "bulletin_url": "https://pubfiles.pagasa.dost.gov.ph/tamss/weather/bulletin/TCB%2314_queenie.pdf",
-  "summary": "QUEENIE: PAR status outside; Bohol wind signal no; cadence daily.",
+  "bulletin_url": null,
+  "summary": "No active tropical cyclone within PAR.",
   "checked": true,
   "monitoring_enabled": false,
   "next_monitor_check_at_utc": null,
