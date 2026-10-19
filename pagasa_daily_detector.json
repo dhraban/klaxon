@@ -1,6 +1,6 @@
 {
   "source": "https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin",
-  "checked_at_utc": "2026-10-18T13:22:31.058094Z",
+  "checked_at_utc": "2026-10-19T16:33:04.848626Z",
   "result_status": "available",
   "active_cyclone": false,
   "storm_name": null,
@@ -10,7 +10,7 @@
   "bohol_under_wind_signal": false,
   "bohol_wind_signal": null,
   "cadence": "daily",
-  "cap_feed_available": true,
+  "cap_feed_available": false,
   "bulletin_url": null,
   "summary": "No active tropical cyclone within PAR.",
   "checked": true,
