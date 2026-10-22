@@ -4,14 +4,6 @@
       "classification": "scheduled",
       "delivered_at_utc": null,
       "delivery_status": "ignored",
-      "first_seen_at_utc": "2026-10-11T01:49:37.824722+00:00",
-      "post_id": "1630432252204089",
-      "pushover_priority": null
-    },
-    {
-      "classification": "scheduled",
-      "delivered_at_utc": null,
-      "delivery_status": "ignored",
       "first_seen_at_utc": "2026-10-12T02:30:39.414339+00:00",
       "post_id": "1633247661922548",
       "pushover_priority": null
@@ -158,6 +150,14 @@
       "delivery_status": "ignored",
       "first_seen_at_utc": "2026-10-22T00:59:33.501654+00:00",
       "post_id": "1643074840939830",
+      "pushover_priority": null
+    },
+    {
+      "classification": "emergency",
+      "delivered_at_utc": null,
+      "delivery_status": "ignored",
+      "first_seen_at_utc": "2026-10-22T06:04:59.835622+00:00",
+      "post_id": "1643142267599754",
       "pushover_priority": null
     }
   ],
