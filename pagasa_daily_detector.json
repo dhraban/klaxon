@@ -1,31 +1,18 @@
 {
   "source": "https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin",
-  "checked_at_utc": "2026-10-24T13:24:20.883625Z",
+  "checked_at_utc": "2026-10-25T13:46:22.009742Z",
   "result_status": "available",
-  "active_cyclone": true,
-  "storm_name": "ROSAL",
-  "par_status": "outside",
-  "issued_at": "11:00 am, 24 October 2026 ROSAL HAS EXITED THE PHILIPPINE AREA OF RESPONSIBILITY. HAZARDS AFFECTING LAND AREAS Severe Winds The periphery of ROSAL will bring strong to gale-force gusts over the following areas (especially in coastal and upland areas exposed to winds): Today (24 October): Batanes, Babuyan Islands, Ilocos Norte, Aurora, northern Quezon, Polillo Islands, Bicol Region, Romblon, Capiz, Iloilo, and Negros Occidental. Tomorrow (25 October): Batanes, Babuyan Islands and Ilocos Norte. HAZARDS AFFECTING COASTAL WATERS A Gale Warning is in effect over the seaboards of Northern Luzon. For more details, refer to Gale Warning No. 8 issued at 5:00 AM today. 24-Hour Sea Condition Outlook Up to very rough seas over the following coastal waters: Up to 5.5 m: The northern seaboard of Batanes. Up to 4.5 m: The northern seaboard of Babuyan Islands. Sea travel is risky for all types or tonnage of vessels. All mariners must remain in port or, if underway, seek shelter or safe harbor as soon as possible until winds and waves subside. Up to rough seas over the following coastal waters: Up to 4.0 m: The remaining seaboards of Babuyan Islands; the northeastern seaboard of mainland Cagayan; the northern seaboard of Ilocos Norte. Up to 3.5 m: The remaining seaboard of Ilocos Norte; the seaboard of Ilocos Sur. Up to 3.0 m: The remaining seaboards of mainland Cagayan; the western seaboard of Pangasinan; the seaboards of Isabela and northern Aurora; the northern and eastern seaboards of Catanduanes. Mariners of small seacrafts, including all types of motorbancas, are advised not to venture out to sea under these conditions, especially if inexperienced of operating ill-equipped vessels. Up to moderate to rough seas over the following coastal waters: Up to 2.5 m: The remaining seaboards of Aurora and Pangasinan; the seaboards of La Union and Eastern Samar; the northern and eastern seaboards of Polillo Islands; the northern seaboards of Camarines Norte and Camarines Sur; the eastern seaboards of Albay, Sorsogon, Dinagat Islands, Siargao-Bucas Grande Islands, and Surigao del Sur; the northern seaboard of Kalayaan Islands. Up to 2.0 m: The seaboards of Zambales and Lubang Islands; the western seaboards of Batangas, Cavite, Occidental Mindoro, and Palawan including Calamian Islands; the remaining seaboards of Kalayaan Islands Mariners of motorbancas and similarly sized vessels are advised to take precautionary measures while venturing out to sea and, if possible, avoid navigation under these conditions. Other coastal waters have forecast wave heights of less than 2.0 m. TRACK AND INTENSITY OUTLOOK It must be emphasized that heavy rainfall and severe winds may still be experienced in localities outside the forecast confidence cone. Refer to “Other Hazards affecting Land Areas” for more details. Furthermore, the track may still shift within the limit of the forecast confidence cone. ROSAL has exited the Philippine Area of Responsibility (PAR) and will continue heading towards the East China Sea. ROSAL is forecast to gradually weaken in the next 12 hours. As it moves over the East China Sea, rapid weakening will begin and it may be downgraded into a severe tropical storm this afternoon or evening. Location of Eye/center The center of Typhoon ROSAL was estimated based on all available data at 525 km North Northeast of Itbayat, Batanes (OUTSIDE PAR). (25.3 °N, 123.4 °E ) Movement Moving East Northeastward at 20 km/h Strength Maximum sustained winds of 120 km/h near the center and gustiness of up to 150 km/h Forecast Position Oct 24, 2026 08:00 PM - 735 km North Northeast of Itbayat, Batanes (OUTSIDE PAR) Wind Signal No Tropical Cyclone Wind Signal Considering these developments, the public and disaster risk reduction and management offices concerned are advised to take all necessary measures to protect life and property. Persons living in areas identified to be highly or very highly susceptible to these hazards are advised to follow evacuation and other instructions from local officials. For heavy rainfall warnings, thunderstorm/rainfall advisories, and other severe weather information specific to your area, please monitor products issued by your local PAGASA Regional Services Division. Tropical Cyclone Bulletin Archive TCB#1_rosal.pdf TCB#2_rosal.pdf TCB#3_rosal.pdf TCB#4_rosal.pdf TCB#5_rosal.pdf TCB#6_rosal.pdf TCB#7_rosal.pdf TCB#8_rosal.pdf TCB#9_rosal.pdf TCB#10_rosal.pdf TCB#11_rosal.pdf TCB#12_rosal.pdf TCB#13_rosal.pdf TCB#14_rosal.pdf TCB#15_rosal.pdf TCB#16_rosal.pdf TCB#17_rosal.pdf We always find ways to improve our weather products and services. Click Here to get started with our short survey. Your Feedback is important to us. TROPICAL CYCLONE BULLETIN NR. 17F Typhoon ROSAL (CHAMPI) Issued at 11:00 AM, 24 October 2026",
-  "forecast_positions": [
-    {
-      "forecast_window": "12-Hour Forecast",
-      "valid_at": "8:00 PM 24 October 2026",
-      "latitude": 27.3,
-      "longitude": 123.3,
-      "details": "735 km North Northeast of Itbayat, Batanes (OUTSIDE PAR) 95 STS N 20 OTHER HAZARDS AFFECTING LAND AREAS Severe Winds The periphery of ROSAL will bring strong to gale-force gusts over the following areas (especially in coastal and upland areas exposed to winds):  Today (24 October): Batanes, Babuyan Islands, Ilocos Norte, Aurora, northern Quezon, Polillo Islands, Bicol Region, Romblon, Capiz, Iloilo, and Negros Occidental.  Tomorrow (25 October): Batanes, Babuyan Islands and Ilocos Norte."
-    }
-  ],
-  "forecast_proximity_to_bohol": {
-    "reference": "Dauis, Bohol",
-    "threshold_km": 250.0,
-    "within_threshold": false
-  },
+  "active_cyclone": false,
+  "storm_name": null,
+  "par_status": "none_active",
+  "issued_at": null,
+  "forecast_positions": [],
   "bohol_under_wind_signal": false,
   "bohol_wind_signal": null,
   "cadence": "daily",
   "cap_feed_available": true,
-  "bulletin_url": "https://pubfiles.pagasa.dost.gov.ph/tamss/weather/bulletin/TCB%2317_rosal.pdf",
-  "summary": "ROSAL: PAR status outside; Bohol wind signal no; cadence daily.",
+  "bulletin_url": null,
+  "summary": "No active tropical cyclone within PAR.",
   "checked": true,
   "monitoring_enabled": false,
   "next_monitor_check_at_utc": null,
