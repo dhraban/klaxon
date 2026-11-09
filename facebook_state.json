@@ -1,14 +1,6 @@
 {
   "processed_posts": [
     {
-      "classification": "unspecified",
-      "delivered_at_utc": null,
-      "delivery_status": "ignored",
-      "first_seen_at_utc": "2026-10-28T14:29:20.596600+00:00",
-      "post_id": "1649379513642696",
-      "pushover_priority": null
-    },
-    {
       "classification": "not_an_outage",
       "delivered_at_utc": null,
       "delivery_status": "ignored",
@@ -159,6 +151,14 @@
       "first_seen_at_utc": "2026-11-08T07:56:29.776458+00:00",
       "post_id": "1661341152446532",
       "pushover_priority": 1
+    },
+    {
+      "classification": "scheduled",
+      "delivered_at_utc": null,
+      "delivery_status": "ignored",
+      "first_seen_at_utc": "2026-11-09T02:45:25.287985+00:00",
+      "post_id": "1662290519018262",
+      "pushover_priority": null
     }
   ],
   "scheduled_outages": [
