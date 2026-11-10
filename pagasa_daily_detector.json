@@ -1,52 +1,18 @@
 {
   "source": "https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin",
-  "checked_at_utc": "2026-11-09T20:50:14.527626Z",
+  "checked_at_utc": "2026-11-10T17:57:27.507292Z",
   "result_status": "available",
-  "active_cyclone": true,
-  "storm_name": "SAMUEL",
-  "par_status": "outside",
-  "issued_at": "05:00 pm, 09 November 2026 TYPHOON SAMUEL HAS EXITED THE PHILIPPINE AREA OF RESPONSIBILITY. HAZARDS AFFECTING LAND AREAS Heavy Rainfall Outlook SAMUEL is less likely to directly affect the weather condition of the country throughout the forecast period. Severe Winds The Northeast Monsoon will bring strong to gale-force gusts over the following areas (especially in coastal and upland areas exposed to winds) Today: Most of Luzon and Visayas, Dinagat Islands, Surigao del Norte, Misamis Oriental, Camiguin, Lanao del Norte, Misamis Occidental, Zamboanga del Norte, Davao Oriental, Davao Occidental, and Sarangani. Tomorrow (10 November) until Wednesday (11 November): Most of Luzon and Visayas, Dinagat Islands, Surigao del Norte, Misamis Oriental, Camiguin, Misamis Occidental, Zamboanga del Norte, Davao Oriental, Davao Occidental, and Sarangani. HAZARDS AFFECTING COASTAL WATERS A Gale Warning is in effect over the northern and western seaboards of Northern Luzon. For more details, refer to Gale Warning No. 1 issued at 5:00 PM today 24-Hour Sea Condition Outlook Up to very rough seas over the following coastal waters: Up to 5.5 m: The northern seaboard of Batanes. Up to 5.0 m: The seaboard of Babuyan Islands; the remaining seaboard of Batanes; the northeastern seaboard of mainland Cagayan; the northern seaboard of Ilocos Norte. Up to 4.5 m: The seaboard of northern Ilocos Sur; the remaining seaboards of Ilocos Norte and mainland Cagayan. Sea travel is risky for all types or tonnage of vessels. All mariners must remain in port or, if underway, seek shelter or safe harbor as soon as possible until winds and waves subside. Up to rough seas over the following coastal waters: Up to 4.0 m: The seaboards of Isabela and northern Aurora; the northern and eastern seaboards of Polillo Islands; the northern seaboard of Camarines Norte. Up to 3.5 m: The seaboard of northern Quezon; the northwestern seaboard of Pangasinan; the northern seaboards of Kalayaan Islands and Camarines Sur; the remaining seaboards of Ilocos Sur and Aurora. Up to 3.0 m: The seaboard of La Union; the northern and eastern seaboards of Catanduanes; the northeastern seaboards of Northern Samar and Eastern Samar; the eastern seaboards of Albay and Sorsogon. Mariners of small seacrafts, including all types of motorbancas, are advised not to venture out to sea under these conditions, especially if inexperienced of operating ill-equipped vessels. Up to moderate seas over the following coastal waters: Up to 2.5 m: The southern seaboard of Catanduanes; the northern seaboard of Northern Samar; the eastern seaboards of Eastern Samar, Dinagat Islands, and Siargao-Bucas Grande Islands; the remaining seaboards of Pangasinan and Kalayaan Islands; the northern seaboard of Zambales. Up to 2.0 m: The seaboards of Lubang Islands, Palawan including Calamian, Cuyo, and Cagayancillo Islands, Caluya Islands, and Surigao del Sur; the eastern seaboard of Davao Oriental; the southern seaboards of Oriental Mindoro and Occidental Mindoro; the remaining northern and eastern seaboards of Quezon; the remaining seaboards of Polillo Islands, Camarines Norte, Catanduanes and Zambales; the western seaboards of Bataan. Mariners of motorbancas and similarly sized vessels are advised to take precautionary measures while venturing out to sea and, if possible, avoid navigation under these conditions. Other coastal waters have forecast wave heights of less than 2.0 m. TRACK AND INTENSITY OUTLOOK It must be emphasized that heavy rainfall and severe winds may still be experienced in localities outside the landfall point and the forecast confidence cone. Refer to “Other Hazards affecting Land Areas” for more details. Furthermore, the track may still shift within the limit of the forecast confidence cone. SAMUEL has exited the Philippine Area of Responsibility (PAR) and is forecast to accelerate generally east northeastward over the Pacific Ocean. SAMUEL is forecast to continue intensifying and may reach its peak intensity tonight or tomorrow early morning. Afterwards, it will then enter a weakening trend due to unfavorable conditions. Location of Eye/center The center of the eye of Typhoon SAMUEL was estimated based on all available data at 1,410 km East Northeast of Extreme Northern Luzon (OUTSIDE PAR) (24.1 °N, 135.1 °E ) Movement Moving East Northeastward at 10 km/h Strength Maximum sustained winds of 130 km/h near the center and gustiness of up to 160 km/h Forecast Position Nov 10, 2026 02:00 AM - 1,530 km East Northeast of Extreme Northern Luzon (OUTSIDE PAR) Nov 10, 2026 02:00 PM - 1,855 km East Northeast of Extreme Northern Luzon (OUTSIDE PAR) Nov 11, 2026 02:00 AM - 2,260 km East Northeast of Extreme Northern Luzon (OUTSIDE PAR) Nov 11, 2026 02:00 PM - 2,720 km East Northeast of Extreme Northern Luzon (OUTSIDE PAR) Wind Signal No Tropical Cyclone Wind Signal Considering these developments, the public and disaster risk reduction and management offices concerned are advised to take all necessary measures to protect life and property. Persons living in areas identified to be highly or very highly susceptible to these hazards are advised to follow evacuation and other instructions from local officials. For heavy rainfall warnings, thunderstorm/rainfall advisories, and other severe weather information specific to your area, please monitor products issued by your local PAGASA Regional Services Division. Tropical Cyclone Bulletin Archive TCB#1_samuel.pdf TCB#2_samuel.pdf We always find ways to improve our weather products and services. Click Here to get started with our short survey. Your Feedback is important to us. TROPICAL CYCLONE BULLETIN NR. 2F Typhoon SAMUEL (CEMPAKA) Issued at 5:00 PM, 09 November 2026",
-  "forecast_positions": [
-    {
-      "forecast_window": "12-Hour Forecast",
-      "valid_at": "2:00 AM 10 November 2026",
-      "latitude": 24.5,
-      "longitude": 136.2,
-      "details": "1,530 km East Northeast of Extreme Northern Luzon (OUTSIDE PAR) 140 TY ENE 10"
-    },
-    {
-      "forecast_window": "24-Hour Forecast",
-      "valid_at": "2:00 PM 10 November 2026",
-      "latitude": 25.2,
-      "longitude": 139.3,
-      "details": "1,855 km East Northeast of Extreme Northern Luzon (OUTSIDE PAR) 140 TY ENE 25"
-    },
-    {
-      "forecast_window": "36-Hour Forecast",
-      "valid_at": "2:00 AM 11 November 2026",
-      "latitude": 26.2,
-      "longitude": 143.2,
-      "details": "2,260 km East Northeast of Extreme Northern Luzon (OUTSIDE PAR) 130 TY ENE 35"
-    },
-    {
-      "forecast_window": "48-Hour Forecast",
-      "valid_at": "2:00 PM 11 November 2026",
-      "latitude": 27.3,
-      "longitude": 147.7,
-      "details": "2,720 km East Northeast of Extreme Northern Luzon (OUTSIDE PAR) 110 STS ENE 40"
-    }
-  ],
-  "forecast_proximity_to_bohol": {
-    "reference": "Dauis, Bohol",
-    "threshold_km": 250.0,
-    "within_threshold": false
-  },
+  "active_cyclone": false,
+  "storm_name": null,
+  "par_status": "none_active",
+  "issued_at": null,
+  "forecast_positions": [],
   "bohol_under_wind_signal": false,
   "bohol_wind_signal": null,
   "cadence": "daily",
-  "cap_feed_available": true,
-  "bulletin_url": "https://pubfiles.pagasa.dost.gov.ph/tamss/weather/bulletin/TCB%232_samuel.pdf",
-  "summary": "SAMUEL: PAR status outside; Bohol wind signal no; cadence daily.",
+  "cap_feed_available": false,
+  "bulletin_url": null,
+  "summary": "No active tropical cyclone within PAR.",
   "checked": true,
   "monitoring_enabled": false,
   "next_monitor_check_at_utc": null,
