@@ -1,12 +1,12 @@
 {
   "audit_succeeded": true,
-  "audited_at_utc": "2026-11-26T19:47:29.956795Z",
-  "period_started_at_utc": "2026-11-25T20:08:08.502971+00:00",
-  "run_count": 2,
+  "audited_at_utc": "2026-11-27T19:37:09.158970Z",
+  "period_started_at_utc": "2026-11-26T19:47:29.957094+00:00",
+  "run_count": 3,
   "expected_runs": 96,
   "minimum_fraction": 0.9,
   "minimum_count": 86.4,
   "status": "degraded",
   "summary": "Facebook watcher checks were below the acceptable threshold.",
-  "reset_at_utc": "2026-11-26T19:47:29.958442Z"
+  "reset_at_utc": "2026-11-27T19:37:09.159855Z"
 }
